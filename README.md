@@ -5,6 +5,7 @@
 **Team:** Forogh Anoosh (@ahmadforoghanoosh-alt), Shabir Mohibi (@Shabirsarabi)
 
 **Roles (M1):** Forogh Anoosh: Maintainer · Shabir Mohibi: Architect
+
 **Domain:** Instructors publish online courses, and students browse them, put them in a cart, pay with Kaspi or a bank card, get enrolled and receive a certificate when they finish.
 
 Requirements: [docs/user-stories.md](docs/user-stories.md)
