@@ -1,9 +1,13 @@
-# <PROJECT NAME>
+# Online Course Marketplace
 
 > Capstone project — Application Design Based on Patterns (Design Patterns), 4th year, Information Systems.
 
-**Team:** <names and GitHub handles>
-**Domain:** <one sentence: who uses the system and for what>
+**Team:** Forogh Anoosh (@ahmadforoghanoosh-alt), Shabir Mohibi (@Shabirsarabi)
+
+**Roles (M1):** Forogh Anoosh: Maintainer · Shabir Mohibi: Architect
+**Domain:** Instructors publish online courses, and students browse them, put them in a cart, pay with Kaspi or a bank card, get enrolled and receive a certificate when they finish.
+
+Requirements: [docs/user-stories.md](docs/user-stories.md)
 
 ## Quick start
 ```bash
