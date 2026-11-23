@@ -5,7 +5,10 @@ Delete the TODO rows as you replace them. `scripts/check-deliverables.sh` counts
 
 | # | Pattern | Lecture | Problem in this project (the smell it removes) | Key classes | Test | Alternative considered |
 |---|---------|---------|-----------------------------------------------|-------------|------|------------------------|
-| 1 | TODO | TODO | TODO | TODO | TODO | TODO |
+| 1 | Factory Method (Creational) | L3 | Checkout needed "if Kaspi new KaspiAdapter, else if card new CardAdapter", one more branch for every payment type | `PaymentProcessor` (abstract `createGateway()`), `KaspiPaymentProcessor`, `CardPaymentProcessor` | `PaymentProcessorTest`, `PaymentProcessorsTest` | `switch` on a payment name in `CheckoutService`: rejected, it grows and breaks Open/Closed |
+| 2 | Adapter (Structural) | L4 | Kaspi SDK works in tiyn and returns "OK"/"ERROR"; the card SDK needs a currency and returns a status number. Our code wants one `charge()` | `PaymentGateway`, `KaspiAdapter` + `KaspiSdk`, `CardAdapter` + `CardSdk` | `KaspiAdapterTest`, `CardAdapterTest` | Calling the SDKs directly in the service: ties the service to the vendors |
+| 3 | Observer (Behavioral) | L5 | After payment, checkout had to call the receipt printer and the enrollment code directly, and grow with every new reaction | `OrderListener`, `CheckoutService` (subject), `EnrollmentListener`, `ConsoleReceiptNotifier` | `CheckoutServiceTest`, `ConsoleReceiptNotifierTest` | Direct calls inside `checkout()`: rejected, every new reaction edits `CheckoutService` |
+| 4 | Template Method (Behavioral) | L6 | Text and HTML certificates repeat the same steps (check completed, header, body, footer); only the format differs | `CertificateGenerator` (final `generate()`), `TextCertificateGenerator`, `HtmlCertificateGenerator` | `CertificateGeneratorTest` | Two separate classes with copy-pasted steps: a fix must be made twice |
 
 ## Rejected patterns
 At least two patterns you considered and decided NOT to use, with the reason (YAGNI). Link the ADR.
