@@ -8,16 +8,14 @@ import kz.kaznaru.capstone.domain.OrderStatus;
 import kz.kaznaru.capstone.domain.Student;
 import kz.kaznaru.capstone.service.CartService;
 import kz.kaznaru.capstone.service.CatalogService;
-import kz.kaznaru.capstone.service.CertificateGenerator;
 import kz.kaznaru.capstone.service.CheckoutService;
 import kz.kaznaru.capstone.service.DiscountService;
+import kz.kaznaru.capstone.service.LearningService;
 import kz.kaznaru.capstone.service.PaymentProcessor;
 import java.io.PrintStream;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 
@@ -28,21 +26,21 @@ public class ConsoleMenu {
     private final CheckoutService checkout;
     private final DiscountService discounts;
     private final List<PaymentProcessor> processors;
-    private final Map<String, CertificateGenerator> generators;
+    private final LearningService learning;
     private final Student student;
     private final Cart cart = new Cart();
     private final Scanner in;
     private final PrintStream out;
 
     public ConsoleMenu(CatalogService catalog, CartService cartService, CheckoutService checkout,
-                       DiscountService discounts, List<PaymentProcessor> processors, Map<String, CertificateGenerator> generators,
+                       DiscountService discounts, List<PaymentProcessor> processors, LearningService learning,
                        Student student, Scanner in, PrintStream out) {
         this.catalog = catalog;
         this.cartService = cartService;
         this.checkout = checkout;
         this.discounts = discounts;
         this.processors = processors;
-        this.generators = generators;
+        this.learning = learning;
         this.student = student;
         this.in = in;
         this.out = out;
@@ -172,7 +170,7 @@ public class ConsoleMenu {
     }
 
     private void showMyCourses() {
-        List<Course> courses = student.getEnrolled();
+        List<Course> courses = learning.myCourses(student);
         if (courses.isEmpty()) {
             out.println("You have no courses yet");
             return;
@@ -185,13 +183,9 @@ public class ConsoleMenu {
 
     private void completeAndCertify() {
         long id = readLong("Course id: ");
-        Course course = student.getEnrolled().stream()
-                .filter(c -> c.id() == id)
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("This course is not in My courses"));
-        student.complete(course);
+        learning.findMyCourse(student, id); // tell the student early if the id is wrong
 
-        List<String> formats = new ArrayList<>(generators.keySet());
+        List<String> formats = learning.certificateFormats();
         for (int i = 0; i < formats.size(); i++) {
             out.println((i + 1) + ". " + formats.get(i));
         }
@@ -199,7 +193,7 @@ public class ConsoleMenu {
         if (index < 0 || index >= formats.size()) {
             throw new IllegalArgumentException("Unknown format");
         }
-        out.println(generators.get(formats.get(index)).generate(student, course, LocalDate.now()));
+        out.println(learning.completeAndCertify(student, id, formats.get(index), LocalDate.now()));
     }
 
     private String readLine(String prompt) {

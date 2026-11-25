@@ -17,6 +17,7 @@ import kz.kaznaru.capstone.service.CheckoutService;
 import kz.kaznaru.capstone.service.DiscountService;
 import kz.kaznaru.capstone.service.EnrollmentListener;
 import kz.kaznaru.capstone.service.HtmlCertificateGenerator;
+import kz.kaznaru.capstone.service.LearningService;
 import kz.kaznaru.capstone.service.PaymentProcessor;
 import kz.kaznaru.capstone.service.TextCertificateGenerator;
 import kz.kaznaru.capstone.ui.ConsoleMenu;
@@ -54,9 +55,10 @@ public final class App {
         Map<String, CertificateGenerator> generators = new LinkedHashMap<>();
         generators.put("Text", new TextCertificateGenerator());
         generators.put("HTML", new HtmlCertificateGenerator());
+        LearningService learning = new LearningService(generators);
 
         Student student = new Student("Student");
-        new ConsoleMenu(catalog, cartService, checkout, discounts, processors, generators,
+        new ConsoleMenu(catalog, cartService, checkout, discounts, processors, learning,
                 student, new Scanner(System.in), System.out).run();
     }
 
