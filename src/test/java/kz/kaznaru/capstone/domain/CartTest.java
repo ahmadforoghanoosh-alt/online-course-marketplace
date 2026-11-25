@@ -49,4 +49,33 @@ class CartTest {
         cart.clear();
         assertTrue(cart.isEmpty());
     }
+
+    @Test
+    void discountChangesTotalButNotSubtotal() {
+        Cart cart = new Cart();
+        cart.add(java);
+        cart.add(sql);
+        cart.applyDiscount(new PercentDiscount(10));
+        assertEquals(27000, cart.subtotal());
+        assertEquals(24300, cart.total());
+        assertTrue(cart.hasDiscount());
+    }
+
+    @Test
+    void newDiscountReplacesOldOne() {
+        Cart cart = new Cart();
+        cart.add(java);
+        cart.applyDiscount(new PercentDiscount(10));
+        cart.applyDiscount(new FixedAmountDiscount(1000));
+        assertEquals(14000, cart.total());
+    }
+
+    @Test
+    void clearAlsoRemovesDiscount() {
+        Cart cart = new Cart();
+        cart.add(java);
+        cart.applyDiscount(new PercentDiscount(10));
+        cart.clear();
+        assertFalse(cart.hasDiscount());
+    }
 }

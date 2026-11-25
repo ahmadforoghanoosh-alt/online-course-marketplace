@@ -9,10 +9,12 @@ import java.util.ArrayList;
 import java.util.List;
 import kz.kaznaru.capstone.domain.Cart;
 import kz.kaznaru.capstone.domain.Course;
+import kz.kaznaru.capstone.domain.FixedAmountDiscount;
 import kz.kaznaru.capstone.domain.Order;
 import kz.kaznaru.capstone.domain.OrderListener;
 import kz.kaznaru.capstone.domain.OrderStatus;
 import kz.kaznaru.capstone.domain.PaymentGateway;
+import kz.kaznaru.capstone.domain.PercentDiscount;
 import kz.kaznaru.capstone.domain.Student;
 import org.junit.jupiter.api.Test;
 
@@ -94,5 +96,30 @@ class CheckoutServiceTest {
         checkout.checkout(student, cart, processorThatReturns(true));
 
         assertTrue(student.isEnrolled(java));
+    }
+
+    @Test
+    void orderUsesDiscountedTotal() {
+        CheckoutService checkout = new CheckoutService();
+        Cart cart = new Cart();
+        cart.add(java);
+        cart.applyDiscount(new PercentDiscount(10));
+
+        Order order = checkout.checkout(student, cart, processorThatReturns(true));
+
+        assertEquals(13500, order.getTotal());
+    }
+
+    @Test
+    void freeOrderIsPaidWithoutCallingTheProvider() {
+        CheckoutService checkout = new CheckoutService();
+        Cart cart = new Cart();
+        cart.add(java);
+        cart.applyDiscount(new FixedAmountDiscount(20000));
+
+        Order order = checkout.checkout(student, cart, processorThatReturns(false));
+
+        assertEquals(0, order.getTotal());
+        assertEquals(OrderStatus.PAID, order.getStatus());
     }
 }
