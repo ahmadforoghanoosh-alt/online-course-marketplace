@@ -20,6 +20,7 @@ import kz.kaznaru.capstone.service.CertificateGenerator;
 import kz.kaznaru.capstone.service.CheckoutService;
 import kz.kaznaru.capstone.service.DiscountService;
 import kz.kaznaru.capstone.service.EnrollmentListener;
+import kz.kaznaru.capstone.service.LearningService;
 import kz.kaznaru.capstone.service.PaymentProcessor;
 import kz.kaznaru.capstone.service.TextCertificateGenerator;
 import org.junit.jupiter.api.Test;
@@ -51,7 +52,7 @@ class ConsoleMenuTest {
 
         new ConsoleMenu(new CatalogService(repo), new CartService(repo), checkout,
                 new DiscountService(Map.of("STUDENT10", new PercentDiscount(10))),
-                List.of(fakeProcessor(true), fakeProcessor(false)), generators,
+                List.of(fakeProcessor(true), fakeProcessor(false)), new LearningService(generators),
                 new Student("Ali"), new Scanner(input), new PrintStream(buffer)).run();
         return buffer.toString();
     }
