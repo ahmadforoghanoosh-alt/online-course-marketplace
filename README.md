@@ -46,6 +46,7 @@ flowchart TB
   subgraph SERVICE["service"]
     Catalog["CatalogService"]
     CartSvc["CartService"]
+    History["CartHistory + cart commands<br/>Command"]
     Discounts["DiscountService"]
     Checkout["CheckoutService<br/>Observer: subject"]
     Learning["LearningService<br/>Facade"]
@@ -74,7 +75,8 @@ flowchart TB
   App --> Menu
   App -.creates.-> Repos & Procs & Receipt
 
-  Menu --> Catalog & CartSvc & Discounts & Checkout & Learning
+  Menu --> Catalog & CartSvc & Discounts & Checkout & Learning & History
+  History --> CartSvc & Discounts & Cart
   Catalog & CartSvc --> RepoPort
   Discounts --> Cart
   Cart --> Strategy
@@ -103,6 +105,7 @@ flowchart TB
 | Strategy | Behavioral | `Cart` + `DiscountStrategy` → `PercentDiscount`, `FixedAmountDiscount` | 5 |
 | Repository | Architectural | `CourseRepository` → `InMemoryCourseRepository`, `SqliteCourseRepository` | 6 |
 | Facade | Structural | `LearningService` over `Student` and the certificate generators | 7 |
+| Command | Behavioral | `CartHistory` runs and undoes `AddToCartCommand`, `RemoveFromCartCommand`, `ApplyDiscountCommand` | 8 |
 
 ## Patterns used
 See [docs/PATTERN_REGISTER.md](docs/PATTERN_REGISTER.md). Decisions: [docs/adr](docs/adr).
