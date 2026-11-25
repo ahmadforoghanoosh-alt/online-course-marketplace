@@ -15,13 +15,18 @@ import kz.kaznaru.capstone.infra.SqliteCourseRepository;
 import kz.kaznaru.capstone.infra.SqliteOrderRepository;
 import kz.kaznaru.capstone.service.CartService;
 import kz.kaznaru.capstone.service.CatalogService;
+import kz.kaznaru.capstone.service.CartNotEmptyCheck;
 import kz.kaznaru.capstone.service.CertificateGenerator;
+import kz.kaznaru.capstone.service.CheckoutCheck;
 import kz.kaznaru.capstone.service.CheckoutService;
 import kz.kaznaru.capstone.service.DiscountService;
 import kz.kaznaru.capstone.service.EnrollmentListener;
 import kz.kaznaru.capstone.service.HtmlCertificateGenerator;
 import kz.kaznaru.capstone.service.LearningService;
+import kz.kaznaru.capstone.service.MaxTotalCheck;
+import kz.kaznaru.capstone.service.NotAlreadyBoughtCheck;
 import kz.kaznaru.capstone.service.OrderHistoryService;
+import kz.kaznaru.capstone.service.PaymentMethodCheck;
 import kz.kaznaru.capstone.service.PaymentStrategy;
 import kz.kaznaru.capstone.service.TextCertificateGenerator;
 import kz.kaznaru.capstone.ui.ApiController;
@@ -36,6 +41,8 @@ import java.util.Scanner;
 /** Composition root: the ONLY place allowed to wire concrete classes together. */
 public final class App {
     static final int API_PORT = 8080;
+    /** Largest total one order may have (MaxTotalCheck, ADR-0012). */
+    static final double MAX_ORDER_TOTAL = 500_000;
 
     private App() { }
 
@@ -51,7 +58,14 @@ public final class App {
         CartService cartService = new CartService(courses);
 
         OrderHistoryService orderHistory = new OrderHistoryService(chooseOrderRepository(args));
-        CheckoutService checkout = new CheckoutService(orderHistory.nextOrderNumber());
+        List<PaymentStrategy> payments = List.of(new KaspiPaymentProcessor(), new CardPaymentProcessor());
+
+        // Chain of Responsibility (ADR-0012): every order passes these checks, in this order, before payment.
+        CheckoutCheck checks = new CartNotEmptyCheck();
+        checks.setNext(new NotAlreadyBoughtCheck())
+                .setNext(new PaymentMethodCheck(payments))
+                .setNext(new MaxTotalCheck(MAX_ORDER_TOTAL));
+        CheckoutService checkout = new CheckoutService(orderHistory.nextOrderNumber(), checks);
         checkout.subscribe(new EnrollmentListener());
         checkout.subscribe(new ConsoleReceiptNotifier(System.out));
         checkout.subscribe(orderHistory);   // Observer: paid orders are saved in the database
@@ -61,7 +75,6 @@ public final class App {
         codes.put("WELCOME2000", new FixedAmountDiscount(2000));
         DiscountService discounts = new DiscountService(codes);
 
-        List<PaymentStrategy> payments = List.of(new KaspiPaymentProcessor(), new CardPaymentProcessor());
 
         Map<String, CertificateGenerator> generators = new LinkedHashMap<>();
         generators.put("Text", new TextCertificateGenerator());
