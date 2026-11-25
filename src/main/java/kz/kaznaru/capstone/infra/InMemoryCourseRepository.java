@@ -35,4 +35,25 @@ public class InMemoryCourseRepository implements CourseRepository {
     public List<Course> findAll() {
         return new ArrayList<>(store.values());
     }
+
+    @Override
+    public Optional<Course> update(long id, String title, String instructor, String description, double price) {
+        if (!store.containsKey(id)) {
+            return Optional.empty();
+        }
+        Course changed = Course.builder()
+                .id(id)
+                .title(title)
+                .instructor(instructor)
+                .description(description)
+                .price(price)
+                .build();
+        store.put(id, changed);
+        return Optional.of(changed);
+    }
+
+    @Override
+    public boolean delete(long id) {
+        return store.remove(id) != null;
+    }
 }

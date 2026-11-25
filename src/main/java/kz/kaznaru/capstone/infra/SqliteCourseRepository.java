@@ -88,6 +88,38 @@ public class SqliteCourseRepository implements CourseRepository {
         }
     }
 
+    @Override
+    public Optional<Course> update(long id, String title, String instructor, String description, double price) {
+        Course changed = Course.builder()  // same checks as the domain, before we save
+                .id(id)
+                .title(title)
+                .instructor(instructor)
+                .description(description)
+                .price(price)
+                .build();
+        String sql = "UPDATE courses SET title = ?, instructor = ?, description = ?, price = ? WHERE id = ?";
+        try (Connection c = connect(); PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setString(1, changed.title());
+            ps.setString(2, changed.instructor());
+            ps.setString(3, changed.description());
+            ps.setDouble(4, changed.price());
+            ps.setLong(5, id);
+            return ps.executeUpdate() == 1 ? Optional.of(changed) : Optional.empty();
+        } catch (SQLException e) {
+            throw new IllegalStateException("Could not update the course", e);
+        }
+    }
+
+    @Override
+    public boolean delete(long id) {
+        try (Connection c = connect(); PreparedStatement ps = c.prepareStatement("DELETE FROM courses WHERE id = ?")) {
+            ps.setLong(1, id);
+            return ps.executeUpdate() == 1;
+        } catch (SQLException e) {
+            throw new IllegalStateException("Could not delete the course", e);
+        }
+    }
+
     private Course toCourse(ResultSet rs) throws SQLException {
         return Course.builder()
                 .id(rs.getLong("id"))

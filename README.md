@@ -29,6 +29,8 @@ In VS Code: open Run and Debug, choose **Run API (port 8080)** and press F5.
 | GET | `/courses` | all courses |
 | GET | `/courses/{id}` | one course (404 if not found) |
 | POST | `/courses?title=..&instructor=..&description=..&price=..` | add a course (201) |
+| PUT | `/courses/{id}?title=..&instructor=..&description=..&price=..` | change a course (404 if not found) |
+| DELETE | `/courses/{id}` | delete a course (404 if not found) |
 | GET | `/cart` | cart with subtotal, discount and total |
 | POST | `/cart/{id}` | add a course to the cart |
 | DELETE | `/cart/{id}` | remove a course from the cart |

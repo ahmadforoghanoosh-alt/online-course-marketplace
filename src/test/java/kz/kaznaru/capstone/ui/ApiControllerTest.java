@@ -110,4 +110,24 @@ class ApiControllerTest {
         assertEquals(404, api.handle("GET", "/unknown", null).status());
         assertTrue(api.handle("GET", "/payment-methods", null).body().contains("\"Kaspi\""));
     }
+
+    @Test
+    void courseCrudThroughTheApi() {
+        ApiResponse created = api.handle("POST", "/courses", "title=Docker&instructor=B&description=Containers&price=9000");
+        assertEquals(201, created.status());
+
+        ApiResponse updated = api.handle("PUT", "/courses/3", "title=Docker+Pro&instructor=B&description=Containers&price=11000");
+        assertEquals(200, updated.status());
+        assertTrue(updated.body().contains("\"title\":\"Docker Pro\""));
+
+        assertEquals(200, api.handle("DELETE", "/courses/3", null).status());
+        assertEquals(404, api.handle("GET", "/courses/3", null).status());
+    }
+
+    @Test
+    void crudErrorsGiveClearStatusCodes() {
+        assertEquals(404, api.handle("PUT", "/courses/99", "title=X&instructor=B&description=d&price=100").status());
+        assertEquals(404, api.handle("DELETE", "/courses/99", null).status());
+        assertEquals(400, api.handle("PUT", "/courses/1", "title=&instructor=B&description=d&price=100").status());
+    }
 }

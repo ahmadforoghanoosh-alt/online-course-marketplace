@@ -72,3 +72,11 @@ As a student, I want to get a certificate when I finish a course, so that I can 
 **Acceptance criteria**
 - [ ] I can get a certificate only for a course in "My courses" that I marked as completed.
 - [ ] The certificate shows my name, the course title and the date.
+
+## US-11 Edit and delete a course
+As an instructor, I want to change or remove my course, so that the catalogue always shows correct information.
+
+**Acceptance criteria**
+- [ ] Given a course exists, when I change its title, description or price and save, then the catalogue shows the new data.
+- [ ] The same checks as for a new course are used: an empty title or a price of 0 or less is rejected with a message.
+- [ ] When I delete a course, it is no longer in the catalogue; deleting or changing an unknown id gives "Course not found".
