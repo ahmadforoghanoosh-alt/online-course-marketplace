@@ -9,6 +9,7 @@ import kz.kaznaru.capstone.infra.CardPaymentProcessor;
 import kz.kaznaru.capstone.infra.ConsoleReceiptNotifier;
 import kz.kaznaru.capstone.infra.InMemoryCourseRepository;
 import kz.kaznaru.capstone.infra.KaspiPaymentProcessor;
+import kz.kaznaru.capstone.infra.SqliteCourseRepository;
 import kz.kaznaru.capstone.service.CartService;
 import kz.kaznaru.capstone.service.CatalogService;
 import kz.kaznaru.capstone.service.CertificateGenerator;
@@ -29,10 +30,12 @@ public final class App {
     private App() { }
 
     public static void main(String[] args) {
-        CourseRepository courses = new InMemoryCourseRepository();
-        courses.add("Java Basics", "A. Nurlanov", "Variables, loops and classes in Java.", 15000);
-        courses.add("Design Patterns", "F. Satybaldiyeva", "GoF patterns with real examples.", 25000);
-        courses.add("SQL for Beginners", "D. Omarova", "Tables, SELECT and JOIN.", 12000);
+        CourseRepository courses = chooseRepository(args);
+        if (courses.findAll().isEmpty()) {
+            courses.add("Java Basics", "A. Nurlanov", "Variables, loops and classes in Java.", 15000);
+            courses.add("Design Patterns", "F. Satybaldiyeva", "GoF patterns with real examples.", 25000);
+            courses.add("SQL for Beginners", "D. Omarova", "Tables, SELECT and JOIN.", 12000);
+        }
 
         CatalogService catalog = new CatalogService(courses);
         CartService cartService = new CartService(courses);
@@ -55,5 +58,15 @@ public final class App {
         Student student = new Student("Student");
         new ConsoleMenu(catalog, cartService, checkout, discounts, processors, generators,
                 student, new Scanner(System.in), System.out).run();
+    }
+
+    /** The only place that decides where courses are stored: "--memory" or the SQLite file (default). */
+    static CourseRepository chooseRepository(String[] args) {
+        if (List.of(args).contains("--memory")) {
+            System.out.println("Storage: in memory (data is lost when the app stops)");
+            return new InMemoryCourseRepository();
+        }
+        System.out.println("Storage: SQLite database file marketplace.db");
+        return new SqliteCourseRepository("jdbc:sqlite:marketplace.db");
     }
 }
