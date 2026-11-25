@@ -22,6 +22,14 @@ public class Cart {
         }
     }
 
+    /** Puts a course back at its old place in the list (used by undo, US-05). */
+    public void restore(int index, Course course) {
+        if (contains(course.id())) {
+            throw new IllegalStateException(course.title() + " is already in the cart");
+        }
+        courses.add(Math.min(Math.max(index, 0), courses.size()), course);
+    }
+
     public boolean contains(long courseId) {
         return courses.stream().anyMatch(c -> c.id() == courseId);
     }
@@ -46,6 +54,11 @@ public class Cart {
             throw new IllegalArgumentException("discount must not be null");
         }
         this.discount = discount;
+    }
+
+    /** Back to no discount (used by undo, US-05). */
+    public void removeDiscount() {
+        this.discount = null;
     }
 
     public boolean hasDiscount() {

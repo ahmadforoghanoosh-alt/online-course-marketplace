@@ -34,8 +34,8 @@ As a student, I want to add a course to my cart, so that I can buy it later.
 As a student, I want to remove a course from my cart and undo my last cart change, so that I can fix a mistake.
 
 **Acceptance criteria**
-- [ ] After removing, the course is not in the cart.
-- [ ] After undo, the cart is exactly the same as before the last change.
+- [x] After removing, the course is not in the cart.
+- [x] After undo, the cart is exactly the same as before the last change.
 
 ## US-06 Cart total
 As a student, I want to see my cart total, so that I know how much I pay.

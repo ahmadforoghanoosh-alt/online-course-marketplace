@@ -2,16 +2,20 @@ package kz.kaznaru.capstone.ui;
 
 import kz.kaznaru.capstone.domain.Cart;
 import kz.kaznaru.capstone.domain.Course;
-import kz.kaznaru.capstone.domain.DiscountStrategy;
 import kz.kaznaru.capstone.domain.Order;
 import kz.kaznaru.capstone.domain.OrderStatus;
 import kz.kaznaru.capstone.domain.Student;
+import kz.kaznaru.capstone.service.AddToCartCommand;
+import kz.kaznaru.capstone.service.ApplyDiscountCommand;
+import kz.kaznaru.capstone.service.CartCommand;
+import kz.kaznaru.capstone.service.CartHistory;
 import kz.kaznaru.capstone.service.CartService;
 import kz.kaznaru.capstone.service.CatalogService;
 import kz.kaznaru.capstone.service.CheckoutService;
 import kz.kaznaru.capstone.service.DiscountService;
 import kz.kaznaru.capstone.service.LearningService;
 import kz.kaznaru.capstone.service.PaymentProcessor;
+import kz.kaznaru.capstone.service.RemoveFromCartCommand;
 import java.io.PrintStream;
 import java.time.LocalDate;
 import java.util.List;
@@ -29,6 +33,7 @@ public class ConsoleMenu {
     private final LearningService learning;
     private final Student student;
     private final Cart cart = new Cart();
+    private final CartHistory history = new CartHistory();
     private final Scanner in;
     private final PrintStream out;
 
@@ -67,7 +72,8 @@ public class ConsoleMenu {
         out.println("2. Show course details     6. Checkout");
         out.println("3. Add new course          7. My courses");
         out.println("4. Add course to cart      8. Complete a course and get certificate");
-        out.println("9. Apply discount code     0. Exit");
+        out.println("9. Apply discount code     U. Undo last cart change");
+        out.println("0. Exit");
         out.print("Choose: ");
     }
 
@@ -82,6 +88,7 @@ public class ConsoleMenu {
             case "7" -> showMyCourses();
             case "8" -> completeAndCertify();
             case "9" -> applyDiscount();
+            case "u", "U" -> undo();
             case "0" -> {
                 return false;
             }
@@ -119,14 +126,21 @@ public class ConsoleMenu {
     }
 
     private void addToCart() {
-        Course course = cartService.addToCart(cart, readLong("Course id: "));
-        out.println(course.title() + " added to cart");
+        AddToCartCommand command = new AddToCartCommand(cartService, cart, readLong("Course id: "));
+        history.run(command);
+        out.println(command.getAdded().title() + " added to cart");
         showCart();
     }
 
     private void removeFromCart() {
-        cart.remove(readLong("Course id: "));
+        history.run(new RemoveFromCartCommand(cart, readLong("Course id: ")));
         out.println("Removed from cart");
+        showCart();
+    }
+
+    private void undo() {
+        CartCommand undone = history.undo();
+        out.println("Undone: " + undone.describe());
         showCart();
     }
 
@@ -142,9 +156,9 @@ public class ConsoleMenu {
     }
 
     private void applyDiscount() {
-        String code = readLine("Discount code: ");
-        DiscountStrategy discount = discounts.applyCode(cart, code);
-        out.println("Discount applied: " + discount.describe());
+        ApplyDiscountCommand command = new ApplyDiscountCommand(discounts, cart, readLine("Discount code: "));
+        history.run(command);
+        out.println("Discount applied: " + command.getApplied().describe());
         showCart();
     }
 
@@ -163,6 +177,7 @@ public class ConsoleMenu {
         }
         Order order = checkout.checkout(student, cart, processors.get(index));
         if (order.getStatus() == OrderStatus.PAID) {
+            history.clear();
             out.println("Payment successful. You are enrolled!");
         } else {
             out.println("Payment failed. Your cart is not changed.");
