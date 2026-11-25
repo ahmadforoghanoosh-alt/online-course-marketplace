@@ -178,13 +178,23 @@ async function loadLearning() {
 async function certificate(courseId, format) {
   const result = await api("POST", "/my-courses/" + courseId + "/certificate", { format });
   const body = $("certificate-body");
-  if (format === "HTML") {
+  const isPage = format !== "Text";
+  if (isPage) {
     // sandbox: the certificate HTML is shown, but no script in it can run
     body.replaceChildren(el("iframe", { srcdoc: result.certificate, sandbox: "", title: "Certificate" }));
   } else {
     body.replaceChildren(el("pre", { textContent: result.certificate }));
   }
+  state.certificate = { html: result.certificate, isPage };
+  $("print-certificate").hidden = !isPage;
+  $("certificate").classList.toggle("wide", format === "Classic");
   $("certificate").showModal();
+}
+
+/** Opens the certificate alone in a new tab, where it can be printed or saved as PDF (Ctrl+P). */
+function printCertificate() {
+  const file = new Blob([state.certificate.html], { type: "text/html" });
+  window.open(URL.createObjectURL(file), "_blank");
 }
 
 // ---------- admin: CRUD ----------
@@ -276,6 +286,7 @@ $("discount-form").addEventListener("submit", (e) => {
 $("checkout").addEventListener("click", () => run(checkout));
 $("course-form").addEventListener("submit", (e) => run(() => saveCourse(e)));
 $("cancel-edit").addEventListener("click", resetForm);
+$("print-certificate").addEventListener("click", printCertificate);
 
 run(async () => {
   state.formats = await api("GET", "/certificate-formats");

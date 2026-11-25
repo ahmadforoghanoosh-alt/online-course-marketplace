@@ -17,6 +17,7 @@ import kz.kaznaru.capstone.service.CartService;
 import kz.kaznaru.capstone.service.CatalogService;
 import kz.kaznaru.capstone.service.CertificateGenerator;
 import kz.kaznaru.capstone.service.CheckoutService;
+import kz.kaznaru.capstone.service.ClassicCertificateGenerator;
 import kz.kaznaru.capstone.service.DiscountService;
 import kz.kaznaru.capstone.service.EnrollmentListener;
 import kz.kaznaru.capstone.service.HtmlCertificateGenerator;
@@ -64,6 +65,7 @@ public final class App {
         List<PaymentStrategy> payments = List.of(new KaspiPaymentProcessor(), new CardPaymentProcessor());
 
         Map<String, CertificateGenerator> generators = new LinkedHashMap<>();
+        generators.put("Classic", new ClassicCertificateGenerator());   // printable certificate, shown first on the website
         generators.put("Text", new TextCertificateGenerator());
         generators.put("HTML", new HtmlCertificateGenerator());
         LearningService learning = new LearningService(generators);
