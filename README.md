@@ -17,6 +17,30 @@ mvn exec:java -Dexec.mainClass=kz.kaznaru.capstone.App   # or press F5 in VS Cod
 mvn exec:java -Dexec.mainClass=kz.kaznaru.capstone.App -Dexec.args="--memory"   # without the database
 ```
 
+## REST API (second UI)
+Start the same application as an HTTP API instead of the console menu ([ADR-0009](docs/adr/0009-http-api-as-second-ui.md)):
+```bash
+mvn exec:java -Dexec.mainClass=kz.kaznaru.capstone.App -Dexec.args="--api"   # http://localhost:8080
+```
+In VS Code: open Run and Debug, choose **Run API (port 8080)** and press F5.
+
+| Method | Path | What it does |
+|---|---|---|
+| GET | `/courses` | all courses |
+| GET | `/courses/{id}` | one course (404 if not found) |
+| POST | `/courses?title=..&instructor=..&description=..&price=..` | add a course (201) |
+| GET | `/cart` | cart with subtotal, discount and total |
+| POST | `/cart/{id}` | add a course to the cart |
+| DELETE | `/cart/{id}` | remove a course from the cart |
+| POST | `/cart/discount?code=STUDENT10` | apply a discount code |
+| POST | `/cart/undo` | undo the last cart change (Command) |
+| GET | `/payment-methods` | Kaspi, Bank card (Strategy) |
+| POST | `/checkout?method=Kaspi` | pay; the receipt is printed in the server console (Observer) |
+| GET | `/my-courses` | the student's courses |
+| POST | `/my-courses/{id}/certificate?format=Text` | complete a course and get a certificate (Facade + Template Method) |
+
+Example: `curl -X POST "http://localhost:8080/cart/1"`
+
 ## Database
 Courses are saved in a SQLite database file, `marketplace.db`, created in the project folder on the first run
 (SQLite through JDBC, `SqliteCourseRepository`). Start with `--memory` to use the in-memory repository instead.
@@ -41,6 +65,7 @@ flowchart TB
 
   subgraph UI["ui"]
     Menu["ConsoleMenu"]
+    Api["ApiController + HttpApiServer<br/>REST API, second UI"]
   end
 
   subgraph SERVICE["service"]
@@ -74,6 +99,8 @@ flowchart TB
   end
 
   App --> Menu
+  App --> Api
+  Api --> Catalog & CartSvc & Discounts & Checkout & Learning & History
   App -.creates.-> Repos & Procs & Receipt
 
   Menu --> Catalog & CartSvc & Discounts & Checkout & Learning & History
