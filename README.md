@@ -14,7 +14,21 @@ Requirements: [docs/user-stories.md](docs/user-stories.md)
 ```bash
 mvn verify                      # build + tests + coverage gate
 mvn exec:java -Dexec.mainClass=kz.kaznaru.capstone.App   # or press F5 in VS Code
+mvn exec:java -Dexec.mainClass=kz.kaznaru.capstone.App -Dexec.args="--memory"   # without the database
 ```
+
+## Database
+Courses are saved in a SQLite database file, `marketplace.db`, created in the project folder on the first run
+(SQLite through JDBC, `SqliteCourseRepository`). Start with `--memory` to use the in-memory repository instead.
+The services do not change: both classes implement `CourseRepository` ([ADR-0004](docs/adr/0004-sqlite-course-repository.md)).
+
+| Table `courses` | Type |
+|---|---|
+| id | INTEGER PRIMARY KEY AUTOINCREMENT |
+| title | TEXT NOT NULL |
+| instructor | TEXT NOT NULL |
+| description | TEXT NOT NULL |
+| price | REAL NOT NULL, CHECK (price > 0) |
 
 ## Architecture
 <!-- Insert a Mermaid class/component diagram here. -->
