@@ -78,4 +78,26 @@ class CartTest {
         cart.clear();
         assertFalse(cart.hasDiscount());
     }
+
+    @Test
+    void restorePutsCourseAtIndexAndRejectsDuplicates() {
+        Cart cart = new Cart();
+        cart.add(sql);
+        cart.restore(0, java);
+
+        assertEquals(java, cart.getCourses().get(0));
+        assertThrows(IllegalStateException.class, () -> cart.restore(1, java));
+    }
+
+    @Test
+    void removeDiscountGoesBackToFullPrice() {
+        Cart cart = new Cart();
+        cart.add(java);
+        cart.applyDiscount(new PercentDiscount(10));
+
+        cart.removeDiscount();
+
+        assertFalse(cart.hasDiscount());
+        assertEquals(15000, cart.total());
+    }
 }
