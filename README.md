@@ -60,6 +60,8 @@ The services do not change: both classes implement `CourseRepository` ([ADR-0004
 Four layers ([ADR-0001](docs/adr/0001-layers-and-package-rules.md)). Arrows show "uses". The rules are checked by
 `ArchitectureTest`: `domain` uses nothing else, `service` does not use `infra` or `ui`, `ui` does not use `infra`.
 Only `App` (the composition root) creates the concrete `infra` classes and wires everything together.
+There are two user interfaces, `ConsoleMenu` and the REST API (`ApiController`). Both use the same services,
+so no business rule is written twice.
 
 ```mermaid
 flowchart TB
