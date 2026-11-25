@@ -110,6 +110,8 @@ public class ApiController {
             case "DELETE cart/2":
                 history.run(new RemoveFromCartCommand(cart, id(p.get(1))));
                 return ok(cartJson());
+            case "GET certificate-formats/1":
+                return ok(learning.certificateFormats());
             case "GET payment-methods/1":
                 return ok(payments.stream().map(PaymentStrategy::name).toList());
             case "POST checkout/1":
