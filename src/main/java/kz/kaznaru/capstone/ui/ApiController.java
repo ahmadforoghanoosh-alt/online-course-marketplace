@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import kz.kaznaru.capstone.domain.Cart;
 import kz.kaznaru.capstone.domain.Course;
 import kz.kaznaru.capstone.domain.Order;
@@ -50,10 +51,12 @@ public class ApiController {
         this.student = student;
     }
 
-    /** Handles one request. Errors from the services become 400 (bad input) or 409 (not allowed now). */
+    /** Handles one request. Errors from the services become 400 (bad input), 404 (not found) or 409 (not allowed now). */
     public ApiResponse handle(String method, String path, String rawQuery) {
         try {
             return route(method.toUpperCase(), parts(path), query(rawQuery));
+        } catch (NoSuchElementException e) {
+            return error(404, e.getMessage());
         } catch (IllegalArgumentException e) {
             return error(400, e.getMessage());
         } catch (IllegalStateException e) {
@@ -74,6 +77,16 @@ public class ApiController {
                 Course added = catalog.addCourse(q.get("title"), q.get("instructor"), q.get("description"),
                         number(q.get("price")));
                 return new ApiResponse(201, Json.write(course(added)));
+            case "PUT courses/2":
+                Course changed = catalog.updateCourse(id(p.get(1)), q.get("title"), q.get("instructor"),
+                        q.get("description"), number(q.get("price")));
+                return ok(course(changed));
+            case "DELETE courses/2":
+                long removed = id(p.get(1));
+                catalog.deleteCourse(removed);
+                Map<String, Object> gone = new LinkedHashMap<>();
+                gone.put("deleted", removed);
+                return ok(gone);
             case "GET cart/1":
                 return ok(cartJson());
             case "POST cart/2":
