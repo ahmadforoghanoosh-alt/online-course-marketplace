@@ -32,18 +32,29 @@ public class SqliteCourseRepository implements CourseRepository {
 
     @Override
     public Course add(String title, String instructor, String description, double price) {
-        new Course(0, title, instructor, description, price); // same checks as the domain, before we save
+        Course draft = Course.builder()  // same checks as the domain, before we save
+                .title(title)
+                .instructor(instructor)
+                .description(description)
+                .price(price)
+                .build();
         String sql = "INSERT INTO courses (title, instructor, description, price) VALUES (?, ?, ?, ?)";
         try (Connection c = connect();
              PreparedStatement ps = c.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            ps.setString(1, title);
-            ps.setString(2, instructor);
-            ps.setString(3, description);
-            ps.setDouble(4, price);
+            ps.setString(1, draft.title());
+            ps.setString(2, draft.instructor());
+            ps.setString(3, draft.description());
+            ps.setDouble(4, draft.price());
             ps.executeUpdate();
             try (ResultSet keys = ps.getGeneratedKeys()) {
                 keys.next();
-                return new Course(keys.getLong(1), title, instructor, description, price);
+                return Course.builder()
+                        .id(keys.getLong(1))
+                        .title(draft.title())
+                        .instructor(draft.instructor())
+                        .description(draft.description())
+                        .price(draft.price())
+                        .build();
             }
         } catch (SQLException e) {
             throw new IllegalStateException("Could not save the course", e);
@@ -78,8 +89,13 @@ public class SqliteCourseRepository implements CourseRepository {
     }
 
     private Course toCourse(ResultSet rs) throws SQLException {
-        return new Course(rs.getLong("id"), rs.getString("title"), rs.getString("instructor"),
-                rs.getString("description"), rs.getDouble("price"));
+        return Course.builder()
+                .id(rs.getLong("id"))
+                .title(rs.getString("title"))
+                .instructor(rs.getString("instructor"))
+                .description(rs.getString("description"))
+                .price(rs.getDouble("price"))
+                .build();
     }
 
     private Connection connect() throws SQLException {
