@@ -10,7 +10,13 @@ public class FakeCourseRepository implements CourseRepository {
 
     @Override
     public Course add(String title, String instructor, String description, double price) {
-        Course course = new Course(courses.size() + 1, title, instructor, description, price);
+        Course course = Course.builder()
+                .id(courses.size() + 1)
+                .title(title)
+                .instructor(instructor)
+                .description(description)
+                .price(price)
+                .build();
         courses.add(course);
         return course;
     }

@@ -59,7 +59,7 @@ flowchart TB
   subgraph DOMAIN["domain"]
     Cart["Cart<br/>Strategy: context"]
     Strategy["DiscountStrategy<br/>PercentDiscount, FixedAmountDiscount"]
-    Order["Order, Student, Course"]
+    Order["Order, Student, Course<br/>Builder: Course.builder()"]
     RepoPort["CourseRepository<br/>Repository port"]
     Gateway["PaymentGateway<br/>Adapter target"]
     Listener["OrderListener"]
@@ -108,6 +108,7 @@ flowchart TB
 | Repository | Architectural | `CourseRepository` → `InMemoryCourseRepository`, `SqliteCourseRepository` | 6 |
 | Facade | Structural | `LearningService` over `Student` and the certificate generators | 7 |
 | Strategy + Factory Method + Adapter | Combination | the chosen `PaymentStrategy` creates its gateway (`createGateway()`), which adapts the vendor SDK | 5 + 1 + 2 |
+| Builder | Creational | `Course.builder()...build()` in the repositories | 9 |
 | Command | Behavioral | `CartHistory` runs and undoes `AddToCartCommand`, `RemoveFromCartCommand`, `ApplyDiscountCommand` | 8 |
 
 ## Patterns used

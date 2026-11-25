@@ -14,7 +14,13 @@ public class InMemoryCourseRepository implements CourseRepository {
 
     @Override
     public Course add(String title, String instructor, String description, double price) {
-        Course course = new Course(next, title, instructor, description, price);
+        Course course = Course.builder()
+                .id(next)
+                .title(title)
+                .instructor(instructor)
+                .description(description)
+                .price(price)
+                .build();
         store.put(course.id(), course);
         next++;
         return course;
