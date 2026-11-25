@@ -19,5 +19,5 @@ of the infra layer.
 I would remove the Facade (`LearningService`), even though I added it myself. It is a small class, and for a console
 app the menu could call `Student` and the certificate generators directly.
 The cost of removing it is that the rule "you can only finish a course you bought" would go back into the UI, and it
-would be harder to test without the console. ✏ For a bigger app with a web page I would keep it, but for this project
+would be harder to test without the console. For a bigger app with a web page I would keep it, but for this project
 it adds one more layer for very little.
