@@ -6,6 +6,13 @@
       "name": "Run App",
       "request": "launch",
       "mainClass": "kz.kaznaru.capstone.App"
+    },
+    {
+      "type": "java",
+      "name": "Run API (port 8080)",
+      "request": "launch",
+      "mainClass": "kz.kaznaru.capstone.App",
+      "args": "--api"
     }
   ]
 }
