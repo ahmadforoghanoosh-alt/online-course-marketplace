@@ -14,4 +14,11 @@ class CourseTest {
     void priceMustBePositive() {
         assertThrows(IllegalArgumentException.class, () -> new Course(1, "Java", "A", "d", 0));
     }
+
+    @Test
+    void notANumberPriceIsRejected() {
+        assertThrows(IllegalArgumentException.class, () -> new Course(1, "Java", "A", "d", Double.NaN));
+        assertThrows(IllegalArgumentException.class,
+                () -> new Course(1, "Java", "A", "d", Double.POSITIVE_INFINITY));
+    }
 }

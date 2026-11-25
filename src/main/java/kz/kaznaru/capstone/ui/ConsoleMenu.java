@@ -16,7 +16,9 @@ import java.io.PrintStream;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Scanner;
 
 /** Console UI. It only talks to the service layer. */
@@ -97,14 +99,14 @@ public class ConsoleMenu {
             return;
         }
         for (Course c : courses) {
-            out.printf("%d. %s (%s) - %.2f KZT%n", c.id(), c.title(), c.instructor(), c.price());
+            out.printf(Locale.ROOT, "%d. %s (%s) - %.2f KZT%n", c.id(), c.title(), c.instructor(), c.price());
         }
     }
 
     private void showDetails() {
         long id = readLong("Course id: ");
         catalog.findCourse(id).ifPresentOrElse(
-                c -> out.printf("%s%nInstructor: %s%n%s%nPrice: %.2f KZT%n",
+                c -> out.printf(Locale.ROOT, "%s%nInstructor: %s%n%s%nPrice: %.2f KZT%n",
                         c.title(), c.instructor(), c.description(), c.price()),
                 () -> out.println("Course not found"));
     }
@@ -132,13 +134,13 @@ public class ConsoleMenu {
 
     private void showCart() {
         for (Course c : cart.getCourses()) {
-            out.printf("  %s  %.2f KZT%n", c.title(), c.price());
+            out.printf(Locale.ROOT, "  %s  %.2f KZT%n", c.title(), c.price());
         }
         if (cart.hasDiscount()) {
-            out.printf("Subtotal: %.2f KZT%n", cart.subtotal());
+            out.printf(Locale.ROOT, "Subtotal: %.2f KZT%n", cart.subtotal());
             out.println("Discount: " + cart.getDiscount().describe());
         }
-        out.printf("Cart total: %.2f KZT%n", cart.total());
+        out.printf(Locale.ROOT, "Cart total: %.2f KZT%n", cart.total());
     }
 
     private void applyDiscount() {
@@ -202,7 +204,11 @@ public class ConsoleMenu {
 
     private String readLine(String prompt) {
         out.print(prompt);
-        return in.nextLine().trim();
+        try {
+            return in.nextLine().trim();
+        } catch (NoSuchElementException e) {
+            throw new IllegalStateException("No more input");
+        }
     }
 
     private long readLong(String prompt) {
@@ -217,7 +223,7 @@ public class ConsoleMenu {
     private double readDouble(String prompt) {
         String text = readLine(prompt);
         try {
-            return Double.parseDouble(text);
+            return Double.parseDouble(text.replace(',', '.'));
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException("Please enter a number");
         }

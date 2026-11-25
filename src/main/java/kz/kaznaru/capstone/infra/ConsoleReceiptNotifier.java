@@ -4,6 +4,7 @@ import kz.kaznaru.capstone.domain.Course;
 import kz.kaznaru.capstone.domain.Order;
 import kz.kaznaru.capstone.domain.OrderListener;
 import java.io.PrintStream;
+import java.util.Locale;
 
 /** Observer: prints the receipt when an order is paid. */
 public class ConsoleReceiptNotifier implements OrderListener {
@@ -19,9 +20,9 @@ public class ConsoleReceiptNotifier implements OrderListener {
         out.println("Order: " + order.getId());
         out.println("Student: " + order.getStudent().getName());
         for (Course course : order.getCourses()) {
-            out.printf("  %s  %.2f KZT%n", course.title(), course.price());
+            out.printf(Locale.ROOT, "  %s  %.2f KZT%n", course.title(), course.price());
         }
-        out.printf("Total: %.2f KZT%n", order.getTotal());
+        out.printf(Locale.ROOT, "Total: %.2f KZT%n", order.getTotal());
         out.println("-------------------");
     }
 }

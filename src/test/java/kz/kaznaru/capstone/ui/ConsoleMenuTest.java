@@ -7,6 +7,7 @@ import java.io.PrintStream;
 import java.time.LocalDate;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Scanner;
 import kz.kaznaru.capstone.domain.FakeCourseRepository;
@@ -115,5 +116,20 @@ class ConsoleMenuTest {
         assertTrue(out.contains("Error: Unknown discount code: FREE"));
         assertTrue(out.contains("Discount applied: 10% off"));
         assertTrue(out.contains("Payment successful. You are enrolled!"));
+    }
+
+    @Test
+    void pricesUseDotOnRussianOrKazakhComputers() {
+        Locale saved = Locale.getDefault();
+        try {
+            Locale.setDefault(Locale.forLanguageTag("ru-RU"));
+            String out = run(String.join("\n",
+                    "3", "Java", "Teacher", "Basics", "15000,50", // comma is accepted too
+                    "4", "1",
+                    "0") + "\n");
+            assertTrue(out.contains("Cart total: 15000.50 KZT"));
+        } finally {
+            Locale.setDefault(saved);
+        }
     }
 }

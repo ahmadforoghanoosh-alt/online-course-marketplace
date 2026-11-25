@@ -6,8 +6,8 @@ public record Course(long id, String title, String instructor, String descriptio
         if (title == null || title.isBlank()) {
             throw new IllegalArgumentException("title must not be blank");
         }
-        if (price <= 0) {
-            throw new IllegalArgumentException("price must be greater than 0");
+        if (!(price > 0) || Double.isInfinite(price)) {
+            throw new IllegalArgumentException("price must be a number greater than 0");
         }
     }
 }
