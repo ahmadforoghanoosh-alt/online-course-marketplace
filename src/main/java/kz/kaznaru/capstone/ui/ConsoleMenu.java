@@ -120,7 +120,7 @@ public class ConsoleMenu {
     }
 
     private void removeFromCart() {
-        cartService.removeFromCart(cart, readLong("Course id: "));
+        cart.remove(readLong("Course id: "));
         out.println("Removed from cart");
         showCart();
     }
@@ -129,7 +129,7 @@ public class ConsoleMenu {
         for (Course c : cart.getCourses()) {
             out.printf("  %s  %.2f KZT%n", c.title(), c.price());
         }
-        out.printf("Cart total: %.2f KZT%n", cartService.total(cart));
+        out.printf("Cart total: %.2f KZT%n", cart.total());
     }
 
     private void doCheckout() {
