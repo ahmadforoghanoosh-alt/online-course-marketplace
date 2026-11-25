@@ -133,4 +133,27 @@ class ConsoleMenuTest {
             Locale.setDefault(saved);
         }
     }
+
+    @Test
+    void undoLastCartChange() {
+        String out = run(String.join("\n",
+                "u",                                    // nothing to undo
+                "3", "Java", "Teacher", "Basics", "15000",
+                "3", "SQL", "Teacher", "Tables", "12000",
+                "4", "1", "4", "2",                     // cart: Java + SQL
+                "5", "1",                               // remove Java
+                "U",                                    // undo: Java is back
+                "9", "STUDENT10",                       // 10% off
+                "u",                                    // undo the discount
+                "6", "1",                               // pay
+                "u",                                    // history is cleared after payment
+                "0") + "\n");
+
+        assertTrue(out.contains("Error: Nothing to undo"));
+        assertTrue(out.contains("Undone: remove Java"));
+        assertTrue(out.contains("Undone: discount 10% off"));
+        assertTrue(out.contains("Cart total: 27000.00 KZT"));
+        assertTrue(out.contains("Payment successful. You are enrolled!"));
+        assertTrue(out.lastIndexOf("Error: Nothing to undo") > out.indexOf("Payment successful"));
+    }
 }
