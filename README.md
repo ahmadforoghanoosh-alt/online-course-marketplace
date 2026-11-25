@@ -38,15 +38,47 @@ In VS Code: open Run and Debug, choose **Run API (port 8080)** and press F5.
 | POST | `/cart/undo` | undo the last cart change (Command) |
 | GET | `/payment-methods` | Kaspi, Bank card (Strategy) |
 | POST | `/checkout?method=Kaspi` | pay; the receipt is printed in the server console (Observer) |
+| GET | `/orders` | order history from the database (reference, total, courses) |
 | GET | `/my-courses` | the student's courses |
 | POST | `/my-courses/{id}/certificate?format=Text` | complete a course and get a certificate (Facade + Template Method) |
 
 Example: `curl -X POST "http://localhost:8080/cart/1"`
 
 ## Database
-Courses are saved in a SQLite database file, `marketplace.db`, created in the project folder on the first run
-(SQLite through JDBC, `SqliteCourseRepository`). Start with `--memory` to use the in-memory repository instead.
-The services do not change: both classes implement `CourseRepository` ([ADR-0004](docs/adr/0004-sqlite-course-repository.md)).
+Courses and paid orders are saved in a SQLite database file, `marketplace.db`, created in the project folder on the
+first run (SQLite through JDBC, `SqliteCourseRepository` and `SqliteOrderRepository`). Start with `--memory` to keep
+everything in memory instead. The services do not change: they only know the `CourseRepository` and `OrderRepository`
+interfaces ([ADR-0004](docs/adr/0004-sqlite-course-repository.md), [ADR-0010](docs/adr/0010-save-orders-in-the-database.md)).
+A paid order is saved by an Observer (`OrderHistoryService`), so after a restart the order history and "My courses" are still there.
+"NOT NULL" means the column must always have a value: the database refuses a row without it.
+
+```mermaid
+erDiagram
+  courses ||..o{ order_items : "was bought in"
+  orders ||--|{ order_items : contains
+  courses {
+    INTEGER id PK
+    TEXT title
+    TEXT instructor
+    TEXT description
+    REAL price
+  }
+  orders {
+    INTEGER id PK
+    TEXT reference
+    TEXT student
+    REAL total
+    TEXT paid_at
+  }
+  order_items {
+    INTEGER id PK
+    INTEGER order_id FK
+    INTEGER course_id
+    TEXT title
+    TEXT instructor
+    REAL price
+  }
+```
 
 | Table `courses` | Type |
 |---|---|
@@ -55,6 +87,24 @@ The services do not change: both classes implement `CourseRepository` ([ADR-0004
 | instructor | TEXT NOT NULL |
 | description | TEXT NOT NULL |
 | price | REAL NOT NULL, CHECK (price > 0) |
+
+| Table `orders` | Type |
+|---|---|
+| id | INTEGER PRIMARY KEY AUTOINCREMENT |
+| reference | TEXT NOT NULL UNIQUE (ORD-1, ORD-2, ...) |
+| student | TEXT NOT NULL |
+| total | REAL NOT NULL, CHECK (total >= 0) |
+| paid_at | TEXT NOT NULL, date and time of the payment |
+
+| Table `order_items` | Type |
+|---|---|
+| id | INTEGER PRIMARY KEY AUTOINCREMENT |
+| order_id | INTEGER NOT NULL, REFERENCES orders(id) |
+| course_id | INTEGER NOT NULL |
+| title, instructor | TEXT NOT NULL, copied on the day of the purchase |
+| price | REAL NOT NULL, the price that was paid |
+
+`order_items` keeps a copy of the title and price, like a real receipt: if a course is changed or deleted later, old orders stay correct.
 
 ## Architecture
 Four layers ([ADR-0001](docs/adr/0001-layers-and-package-rules.md)). Arrows show "uses". The rules are checked by
@@ -84,6 +134,7 @@ flowchart TB
     Processor["PaymentProcessor<br/>Factory Method"]
     CertGen["CertificateGenerator<br/>Template Method"]
     Enroll["EnrollmentListener<br/>Observer"]
+    OrderHist["OrderHistoryService<br/>Observer: saves paid orders"]
   end
 
   subgraph DOMAIN["domain"]
@@ -91,13 +142,13 @@ flowchart TB
     Strategy["DiscountStrategy<br/>PercentDiscount, FixedAmountDiscount"]
     Course["Course<br/>Builder"]
     Order["Order, Student"]
-    RepoPort["CourseRepository<br/>Repository port"]
+    RepoPort["CourseRepository, OrderRepository<br/>Repository ports"]
     Gateway["PaymentGateway<br/>Adapter target"]
     Listener["OrderListener"]
   end
 
   subgraph INFRA["infra"]
-    Repos["InMemoryCourseRepository<br/>SqliteCourseRepository"]
+    Repos["InMemory / Sqlite<br/>CourseRepository + OrderRepository"]
     Adapters["KaspiAdapter, CardAdapter<br/>Adapter"]
     Sdks["KaspiSdk, CardSdk<br/>vendor code"]
     Procs["KaspiPaymentProcessor<br/>CardPaymentProcessor"]
@@ -109,6 +160,7 @@ flowchart TB
 
   Menu & Api --> Catalog & Checkout & Learning
   Menu & Api --> History
+  Api --> OrderHist
   History --> Commands
   Commands --> CartSvc & Discounts & Cart
   Catalog & CartSvc --> RepoPort
@@ -122,6 +174,8 @@ flowchart TB
   Processor -.implements.-> PayStrategy
   Processor --> Gateway
   Enroll -.implements.-> Listener
+  OrderHist -.implements.-> Listener
+  OrderHist --> RepoPort
 
   Repos -.implements.-> RepoPort
   Repos -->|builds| Course
