@@ -71,10 +71,11 @@ public final class App {
         Student student = new Student("Student");
         orderHistory.restoreEnrollments(student);   // "My courses" comes back after a restart
         if (List.of(args).contains("--api")) {
-            // Second UI (ADR-0009): the same services, used through HTTP instead of the console.
+            // Website + REST API (ADR-0009, ADR-0011): the same services, used through HTTP instead of the console.
             new HttpApiServer(new ApiController(catalog, cartService, checkout, discounts, payments, learning,
                     student, orderHistory)).start(API_PORT);
-            System.out.println("API running: http://localhost:" + API_PORT + "/courses  (stop with Ctrl+C)");
+            System.out.println("Website: http://localhost:" + API_PORT + "/   API: http://localhost:" + API_PORT
+                    + "/courses  (stop with Ctrl+C)");
             return;
         }
         new ConsoleMenu(catalog, cartService, checkout, discounts, payments, learning,

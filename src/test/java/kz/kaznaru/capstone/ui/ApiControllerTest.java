@@ -147,4 +147,12 @@ class ApiControllerTest {
         assertTrue(orders.body().contains("\"reference\":\"ORD-1\""));
         assertTrue(orders.body().contains("\"title\":\"Java\""));
     }
+
+    @Test
+    void certificateFormatsAreListed() {
+        ApiResponse formats = api.handle("GET", "/certificate-formats", null);
+
+        assertEquals(200, formats.status());
+        assertEquals("[\"Text\"]", formats.body());
+    }
 }

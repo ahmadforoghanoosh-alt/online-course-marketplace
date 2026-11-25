@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Online Course Marketplace</title>
+  <link rel="icon" href="logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <img class="logo" src="logo.svg" alt="" width="42" height="42">
+      <div>
+        <strong>Course Marketplace</strong>
+        <small>Learn. Pay. Get certified.</small>
+      </div>
+    </div>
+    <nav class="tabs" aria-label="Pages">
+      <button class="tab active" data-page="catalogue">Catalogue</button>
+      <button class="tab" data-page="cart">Cart <span id="cart-count" class="count">0</span></button>
+      <button class="tab" data-page="learning">My learning</button>
+      <button class="tab" data-page="admin">Admin</button>
+    </nav>
+    <label class="switch" title="Show which design pattern works behind each part of the page">
+      <input type="checkbox" id="show-patterns"> Show patterns
+    </label>
+  </header>
+
+  <main>
+    <!-- Catalogue: GET /courses -->
+    <section id="page-catalogue" class="page active">
+      <div class="hero">
+        <div>
+          <h1>Find your next course</h1>
+          <p>Learn new skills, pay with Kaspi or a bank card, and get a certificate.</p>
+        </div>
+        <input id="search" type="search" placeholder="Search by title or instructor" aria-label="Search courses">
+      </div>
+      <p class="pattern">Repository + SQLite: the list comes from <code>GET /courses</code></p>
+      <div id="course-grid" class="grid"></div>
+    </section>
+
+    <!-- Cart and checkout -->
+    <section id="page-cart" class="page">
+      <div class="page-head"><h1>Your cart</h1></div>
+      <div class="cart-layout">
+        <div>
+          <ul id="cart-items" class="list"></ul>
+          <div class="row">
+            <button id="undo" class="ghost" disabled>↶ Undo last change</button>
+            <span class="pattern">Command: every cart change can be undone</span>
+          </div>
+        </div>
+        <aside class="panel">
+          <form id="discount-form" class="row">
+            <input id="discount-code" placeholder="Discount code, e.g. STUDENT10" aria-label="Discount code">
+            <button>Apply</button>
+          </form>
+          <p class="pattern">Strategy: percent or fixed discount</p>
+          <dl class="totals">
+            <dt>Subtotal</dt><dd id="subtotal">0 KZT</dd>
+            <dt>Discount</dt><dd id="discount">none</dd>
+            <dt class="big">Total</dt><dd id="total" class="big">0 KZT</dd>
+          </dl>
+          <fieldset id="payment-methods" class="methods">
+            <legend>Pay with</legend>
+          </fieldset>
+          <p class="pattern">Strategy + Adapter + Factory Method: each payment method</p>
+          <button id="checkout" class="primary wide">Pay now</button>
+          <p class="pattern">Observer: after payment → enroll, receipt, save order</p>
+          <div id="checkout-result"></div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- My learning -->
+    <section id="page-learning" class="page">
+      <div class="page-head"><h1>My learning</h1></div>
+      <h2>My courses</h2>
+      <p class="pattern">Facade + Template Method: one call completes the course and builds the certificate</p>
+      <ul id="my-courses" class="list"></ul>
+      <h2>Order history</h2>
+      <p class="pattern">Saved in the tables <code>orders</code> and <code>order_items</code></p>
+      <table class="table">
+        <thead><tr><th>Order</th><th>Courses</th><th class="num">Total</th></tr></thead>
+        <tbody id="orders"></tbody>
+      </table>
+    </section>
+
+    <!-- Admin: CRUD -->
+    <section id="page-admin" class="page">
+      <div class="page-head"><h1>Manage courses</h1></div>
+      <p class="pattern">CRUD: POST, GET, PUT and DELETE /courses — Builder checks every course</p>
+      <form id="course-form" class="panel form">
+        <h2 id="form-title">Add a course</h2>
+        <input type="hidden" id="course-id">
+        <label>Title <input id="f-title" required></label>
+        <label>Instructor <input id="f-instructor" required></label>
+        <label class="full">Description <textarea id="f-description" rows="2"></textarea></label>
+        <label>Price (KZT) <input id="f-price" type="number" min="1" step="1" required></label>
+        <div class="row end">
+          <button type="button" id="cancel-edit" class="ghost" hidden>Cancel</button>
+          <button class="primary" id="save-course">Add course</button>
+        </div>
+      </form>
+      <table class="table">
+        <thead><tr><th>ID</th><th>Title</th><th>Instructor</th><th class="num">Price</th><th></th></tr></thead>
+        <tbody id="admin-courses"></tbody>
+      </table>
+    </section>
+  </main>
+
+  <dialog id="certificate">
+    <h2>Your certificate</h2>
+    <div id="certificate-body"></div>
+    <form method="dialog"><button class="primary">Close</button></form>
+  </dialog>
+
+  <div id="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+</body>
+</html>

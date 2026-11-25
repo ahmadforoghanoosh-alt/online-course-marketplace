@@ -17,6 +17,21 @@ mvn exec:java -Dexec.mainClass=kz.kaznaru.capstone.App   # or press F5 in VS Cod
 mvn exec:java -Dexec.mainClass=kz.kaznaru.capstone.App -Dexec.args="--memory"   # without the database
 ```
 
+## Website
+Start the app with `--api` (in VS Code: Run and Debug → **Run API (port 8080)**) and open **http://localhost:8080/**.
+The website is plain HTML, CSS and JavaScript in `src/main/resources/web` ([ADR-0011](docs/adr/0011-website-on-top-of-the-api.md)).
+It has no business rules of its own: every button calls the REST API below, so the console, the API and the website
+always behave the same.
+
+| Page | What you can do | API calls |
+|---|---|---|
+| Catalogue | search courses, add to cart | `GET /courses`, `POST /cart/{id}` |
+| Cart | remove, discount code, undo, pay with Kaspi or bank card | `DELETE /cart/{id}`, `POST /cart/discount`, `POST /cart/undo`, `POST /checkout` |
+| My learning | my courses, certificate (Text or HTML), order history | `GET /my-courses`, `POST /my-courses/{id}/certificate`, `GET /orders` |
+| Admin | add, edit and delete courses (CRUD) | `POST`, `GET`, `PUT`, `DELETE /courses` |
+
+Tick **Show patterns** in the top right corner to see which design pattern works behind each part of the page.
+
 ## REST API (second UI)
 Start the same application as an HTTP API instead of the console menu ([ADR-0009](docs/adr/0009-http-api-as-second-ui.md)):
 ```bash
@@ -36,6 +51,7 @@ In VS Code: open Run and Debug, choose **Run API (port 8080)** and press F5.
 | DELETE | `/cart/{id}` | remove a course from the cart |
 | POST | `/cart/discount?code=STUDENT10` | apply a discount code |
 | POST | `/cart/undo` | undo the last cart change (Command) |
+| GET | `/certificate-formats` | Text, HTML |
 | GET | `/payment-methods` | Kaspi, Bank card (Strategy) |
 | POST | `/checkout?method=Kaspi` | pay; the receipt is printed in the server console (Observer) |
 | GET | `/orders` | order history from the database (reference, total, courses) |
@@ -110,8 +126,8 @@ erDiagram
 Four layers ([ADR-0001](docs/adr/0001-layers-and-package-rules.md)). Arrows show "uses". The rules are checked by
 `ArchitectureTest`: `domain` uses nothing else, `service` does not use `infra` or `ui`, `ui` does not use `infra`.
 Only `App` (the composition root) creates the concrete `infra` classes and wires everything together.
-There are two user interfaces, `ConsoleMenu` and the REST API (`ApiController`). Both use the same services,
-so no business rule is written twice.
+There are two user interfaces, `ConsoleMenu` and the REST API (`ApiController`); the website runs in the browser and
+only calls that API. All of them use the same services, so no business rule is written twice.
 
 ```mermaid
 flowchart TB
@@ -120,6 +136,7 @@ flowchart TB
   subgraph UI["ui (two user interfaces)"]
     Menu["ConsoleMenu"]
     Api["ApiController<br/>HttpApiServer, Json"]
+    Web["Website<br/>HTML, CSS, JS (WebFile)"]
   end
 
   subgraph SERVICE["service"]
@@ -156,6 +173,7 @@ flowchart TB
   end
 
   App --> Menu & Api
+  Web -->|fetch| Api
   App -.creates.-> Repos & Procs & Receipt
 
   Menu & Api --> Catalog & Checkout & Learning
