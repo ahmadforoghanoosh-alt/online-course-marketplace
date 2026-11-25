@@ -65,19 +65,20 @@ Only `App` (the composition root) creates the concrete `infra` classes and wires
 flowchart TB
   App["App<br/>composition root"]
 
-  subgraph UI["ui"]
+  subgraph UI["ui (two user interfaces)"]
     Menu["ConsoleMenu"]
-    Api["ApiController + HttpApiServer<br/>REST API, second UI"]
+    Api["ApiController<br/>HttpApiServer, Json"]
   end
 
   subgraph SERVICE["service"]
     Catalog["CatalogService"]
     CartSvc["CartService"]
-    History["CartHistory + cart commands<br/>Command"]
     Discounts["DiscountService"]
+    History["CartHistory<br/>Command: invoker"]
+    Commands["CartCommand<br/>AddToCart, RemoveFromCart, ApplyDiscount<br/>Command"]
     Checkout["CheckoutService<br/>Observer: subject"]
     Learning["LearningService<br/>Facade"]
-    PayStrat["PaymentStrategy<br/>Strategy"]
+    PayStrategy["PaymentStrategy<br/>Strategy"]
     Processor["PaymentProcessor<br/>Factory Method"]
     CertGen["CertificateGenerator<br/>Template Method"]
     Enroll["EnrollmentListener<br/>Observer"]
@@ -86,7 +87,8 @@ flowchart TB
   subgraph DOMAIN["domain"]
     Cart["Cart<br/>Strategy: context"]
     Strategy["DiscountStrategy<br/>PercentDiscount, FixedAmountDiscount"]
-    Order["Order, Student, Course<br/>Builder: Course.builder()"]
+    Course["Course<br/>Builder"]
+    Order["Order, Student"]
     RepoPort["CourseRepository<br/>Repository port"]
     Gateway["PaymentGateway<br/>Adapter target"]
     Listener["OrderListener"]
@@ -100,26 +102,27 @@ flowchart TB
     Receipt["ConsoleReceiptNotifier<br/>Observer"]
   end
 
-  App --> Menu
-  App --> Api
-  Api --> Catalog & CartSvc & Discounts & Checkout & Learning & History
+  App --> Menu & Api
   App -.creates.-> Repos & Procs & Receipt
 
-  Menu --> Catalog & CartSvc & Discounts & Checkout & Learning & History
-  History --> CartSvc & Discounts & Cart
+  Menu & Api --> Catalog & Checkout & Learning
+  Menu & Api --> History
+  History --> Commands
+  Commands --> CartSvc & Discounts & Cart
   Catalog & CartSvc --> RepoPort
   Discounts --> Cart
   Cart --> Strategy
-  Checkout --> PayStrat
-  Processor -.implements.-> PayStrat
+  Checkout --> PayStrategy
   Checkout --> Listener
   Checkout --> Order
   Learning --> CertGen
   Learning --> Order
+  Processor -.implements.-> PayStrategy
   Processor --> Gateway
   Enroll -.implements.-> Listener
 
   Repos -.implements.-> RepoPort
+  Repos -->|builds| Course
   Procs -.extends.-> Processor
   Procs --> Adapters
   Adapters -.implements.-> Gateway
