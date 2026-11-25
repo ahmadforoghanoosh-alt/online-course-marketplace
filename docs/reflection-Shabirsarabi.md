@@ -12,7 +12,7 @@ I think the payment part is bigger than it needs to be for this project. For two
 two adapters, two SDK classes, `PaymentProcessor` and two processor subclasses: eight types for "take the money".
 Factory Method and Adapter together make sense when there are many real providers, but here both SDKs never fail
 and never use the network.
-✏ I noticed it when I drew the architecture diagram for the README: the payment boxes take more space than the rest
+ I noticed it when I drew the architecture diagram for the README: the payment boxes take more space than the rest
 of the infra layer.
 
 ## 3. Which pattern would you remove if you started over? Why?
