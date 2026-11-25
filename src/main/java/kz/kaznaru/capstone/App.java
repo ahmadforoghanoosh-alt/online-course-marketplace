@@ -20,7 +20,10 @@ import kz.kaznaru.capstone.service.HtmlCertificateGenerator;
 import kz.kaznaru.capstone.service.LearningService;
 import kz.kaznaru.capstone.service.PaymentStrategy;
 import kz.kaznaru.capstone.service.TextCertificateGenerator;
+import kz.kaznaru.capstone.ui.ApiController;
 import kz.kaznaru.capstone.ui.ConsoleMenu;
+import kz.kaznaru.capstone.ui.HttpApiServer;
+import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,9 +31,11 @@ import java.util.Scanner;
 
 /** Composition root: the ONLY place allowed to wire concrete classes together. */
 public final class App {
+    static final int API_PORT = 8080;
+
     private App() { }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         CourseRepository courses = chooseRepository(args);
         if (courses.findAll().isEmpty()) {
             courses.add("Java Basics", "A. Nurlanov", "Variables, loops and classes in Java.", 15000);
@@ -58,6 +63,13 @@ public final class App {
         LearningService learning = new LearningService(generators);
 
         Student student = new Student("Student");
+        if (List.of(args).contains("--api")) {
+            // Second UI (ADR-0009): the same services, used through HTTP instead of the console.
+            new HttpApiServer(new ApiController(catalog, cartService, checkout, discounts, payments, learning,
+                    student)).start(API_PORT);
+            System.out.println("API running: http://localhost:" + API_PORT + "/courses  (stop with Ctrl+C)");
+            return;
+        }
         new ConsoleMenu(catalog, cartService, checkout, discounts, payments, learning,
                 student, new Scanner(System.in), System.out).run();
     }
