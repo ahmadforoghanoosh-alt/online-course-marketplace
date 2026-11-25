@@ -7,15 +7,16 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 
 /**
- * A file of the website (HTML, CSS or JavaScript) from src/main/resources/web (ADR-0011).
+ * A file of the website (HTML, CSS, JavaScript or the SVG logo) from src/main/resources/web (ADR-0011).
  * Only simple file names are allowed, so a path like "/../pom.xml" can never read other files.
  */
 public record WebFile(String contentType, byte[] bytes) {
-    private static final Pattern SAFE_NAME = Pattern.compile("[a-z0-9-]+\\.(html|css|js)");
+    private static final Pattern SAFE_NAME = Pattern.compile("[a-z0-9-]+\\.(html|css|js|svg)");
     private static final Map<String, String> TYPES = Map.of(
             "html", "text/html; charset=utf-8",
             "css", "text/css; charset=utf-8",
-            "js", "text/javascript; charset=utf-8");
+            "js", "text/javascript; charset=utf-8",
+            "svg", "image/svg+xml");
 
     /** "/" gives index.html; "/app.js" gives app.js; anything else (for example "/courses") is not a web file. */
     public static Optional<WebFile> find(String path) {

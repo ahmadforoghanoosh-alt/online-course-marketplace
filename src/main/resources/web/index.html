@@ -4,12 +4,13 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Online Course Marketplace</title>
+  <link rel="icon" href="logo.svg" type="image/svg+xml">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header class="top">
     <div class="brand">
-      <span class="logo" aria-hidden="true">◆</span>
+      <img class="logo" src="logo.svg" alt="" width="42" height="42">
       <div>
         <strong>Course Marketplace</strong>
         <small>Learn. Pay. Get certified.</small>
@@ -29,8 +30,11 @@
   <main>
     <!-- Catalogue: GET /courses -->
     <section id="page-catalogue" class="page active">
-      <div class="page-head">
-        <h1>Catalogue</h1>
+      <div class="hero">
+        <div>
+          <h1>Find your next course</h1>
+          <p>Learn new skills, pay with Kaspi or a bank card, and get a certificate.</p>
+        </div>
         <input id="search" type="search" placeholder="Search by title or instructor" aria-label="Search courses">
       </div>
       <p class="pattern">Repository + SQLite: the list comes from <code>GET /courses</code></p>

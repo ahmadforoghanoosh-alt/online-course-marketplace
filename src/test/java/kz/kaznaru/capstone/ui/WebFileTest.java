@@ -19,6 +19,7 @@ class WebFileTest {
     void scriptAndStyleHaveTheRightType() {
         assertEquals("text/javascript; charset=utf-8", WebFile.find("/app.js").orElseThrow().contentType());
         assertEquals("text/css; charset=utf-8", WebFile.find("/style.css").orElseThrow().contentType());
+        assertEquals("image/svg+xml", WebFile.find("/logo.svg").orElseThrow().contentType());
     }
 
     @Test
