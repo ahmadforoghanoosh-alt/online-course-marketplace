@@ -1,5 +1,6 @@
 package kz.kaznaru.capstone.service;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -36,6 +37,30 @@ class CertificateGeneratorTest {
         assertTrue(html.contains("<b>Ali</b>"));
         assertTrue(html.contains("<b>Java Basics</b>"));
         assertTrue(html.trim().endsWith("</html>"));
+    }
+
+    @Test
+    void classicCertificateHasAllPartsAndADesign() {
+        String html = new ClassicCertificateGenerator().generate(studentWhoFinished(), java, date);
+        assertTrue(html.startsWith("<!DOCTYPE html>"));
+        assertTrue(html.contains("<div class=\"name\">Ali</div>"));
+        assertTrue(html.contains("<div class=\"course\">Java Basics</div>"));
+        assertTrue(html.contains("20 November 2026"));
+        assertTrue(html.contains("Certificate No. CM-2026-0001-"));
+        assertTrue(html.contains("@page{size:A4 landscape"));
+        assertTrue(html.trim().endsWith("</html>"));
+    }
+
+    @Test
+    void classicCertificateEscapesHtml() {
+        Course tricky = new Course(2, "<script>alert(1)</script>", "A & B", "d", 100);
+        Student s = new Student("Ali");
+        s.enroll(tricky);
+        s.complete(tricky);
+        String html = new ClassicCertificateGenerator().generate(s, tricky, date);
+        assertTrue(html.contains("&lt;script&gt;alert(1)&lt;/script&gt;"));
+        assertTrue(html.contains("A &amp; B"));
+        assertFalse(html.contains("<script>"));
     }
 
     @Test
