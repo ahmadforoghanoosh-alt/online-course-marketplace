@@ -23,4 +23,12 @@ class OrderTest {
     void orderNeedsCourses() {
         assertThrows(IllegalArgumentException.class, () -> new Order("ORD-1", student, List.of()));
     }
+
+    @Test
+    void orderCanTakeDiscountedTotal() {
+        Order order = new Order("ORD-2", student, List.of(new Course(1, "Java", "A", "d", 15000)), 13500);
+        assertEquals(13500, order.getTotal());
+        assertThrows(IllegalArgumentException.class,
+                () -> new Order("ORD-3", student, List.of(new Course(1, "Java", "A", "d", 15000)), -1));
+    }
 }

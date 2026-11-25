@@ -3,9 +3,10 @@ package kz.kaznaru.capstone.domain;
 import java.util.ArrayList;
 import java.util.List;
 
-/** The courses a student wants to buy. */
+/** The courses a student wants to buy, and an optional discount (US-07). */
 public class Cart {
     private final List<Course> courses = new ArrayList<>();
+    private DiscountStrategy discount;
 
     public void add(Course course) {
         if (contains(course.id())) {
@@ -29,8 +30,30 @@ public class Cart {
         return List.copyOf(courses);
     }
 
-    public double total() {
+    /** Sum of the prices, before the discount. */
+    public double subtotal() {
         return courses.stream().mapToDouble(Course::price).sum();
+    }
+
+    /** What the student pays: the subtotal with the discount rule applied. */
+    public double total() {
+        return discount == null ? subtotal() : discount.apply(subtotal());
+    }
+
+    /** Uses this discount rule from now on. A new code replaces the old one. */
+    public void applyDiscount(DiscountStrategy discount) {
+        if (discount == null) {
+            throw new IllegalArgumentException("discount must not be null");
+        }
+        this.discount = discount;
+    }
+
+    public boolean hasDiscount() {
+        return discount != null;
+    }
+
+    public DiscountStrategy getDiscount() {
+        return discount;
     }
 
     public boolean isEmpty() {
@@ -39,5 +62,6 @@ public class Cart {
 
     public void clear() {
         courses.clear();
+        discount = null;
     }
 }

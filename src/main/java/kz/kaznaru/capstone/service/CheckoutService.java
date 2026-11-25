@@ -23,10 +23,12 @@ public class CheckoutService {
         if (cart.isEmpty()) {
             throw new IllegalStateException("Cart is empty");
         }
-        Order order = new Order("ORD-" + nextOrderNumber, student, cart.getCourses());
+        Order order = new Order("ORD-" + nextOrderNumber, student, cart.getCourses(), cart.total());
         nextOrderNumber++;
 
-        if (processor.pay(order)) {
+        // A free order (discount covers everything) needs no payment provider.
+        boolean paid = order.getTotal() == 0 || processor.pay(order);
+        if (paid) {
             order.markPaid();
             cart.clear();
             for (OrderListener listener : listeners) {

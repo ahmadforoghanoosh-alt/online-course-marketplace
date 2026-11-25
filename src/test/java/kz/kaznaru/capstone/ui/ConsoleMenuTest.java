@@ -10,12 +10,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import kz.kaznaru.capstone.domain.FakeCourseRepository;
+import kz.kaznaru.capstone.domain.PercentDiscount;
 import kz.kaznaru.capstone.domain.PaymentGateway;
 import kz.kaznaru.capstone.domain.Student;
 import kz.kaznaru.capstone.service.CartService;
 import kz.kaznaru.capstone.service.CatalogService;
 import kz.kaznaru.capstone.service.CertificateGenerator;
 import kz.kaznaru.capstone.service.CheckoutService;
+import kz.kaznaru.capstone.service.DiscountService;
 import kz.kaznaru.capstone.service.EnrollmentListener;
 import kz.kaznaru.capstone.service.PaymentProcessor;
 import kz.kaznaru.capstone.service.TextCertificateGenerator;
@@ -47,6 +49,7 @@ class ConsoleMenuTest {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 
         new ConsoleMenu(new CatalogService(repo), new CartService(repo), checkout,
+                new DiscountService(Map.of("STUDENT10", new PercentDiscount(10))),
                 List.of(fakeProcessor(true), fakeProcessor(false)), generators,
                 new Student("Ali"), new Scanner(input), new PrintStream(buffer)).run();
         return buffer.toString();
@@ -79,7 +82,7 @@ class ConsoleMenuTest {
     @Test
     void wrongInputShowsErrors() {
         String out = run(String.join("\n",
-                "9",          // unknown option
+                "99",         // unknown option
                 "2", "abc",   // not a number
                 "2", "5",     // unknown course
                 "4", "5",     // add unknown course
@@ -95,5 +98,22 @@ class ConsoleMenuTest {
         assertTrue(out.contains("Cart is empty"));
         assertTrue(out.contains("You have no courses yet"));
         assertTrue(out.contains("This course is not in My courses"));
+    }
+
+    @Test
+    void discountCodeChangesCartTotal() {
+        String out = run(String.join("\n",
+                "3", "Java", "Teacher", "Basics", "15000",
+                "9", "STUDENT10",                       // empty cart
+                "4", "1",
+                "9", "FREE",                            // unknown code
+                "9", "student10",                       // valid code
+                "6", "1",                               // pay the discounted total
+                "0") + "\n");
+
+        assertTrue(out.contains("Error: Cart is empty"));
+        assertTrue(out.contains("Error: Unknown discount code: FREE"));
+        assertTrue(out.contains("Discount applied: 10% off"));
+        assertTrue(out.contains("Payment successful. You are enrolled!"));
     }
 }

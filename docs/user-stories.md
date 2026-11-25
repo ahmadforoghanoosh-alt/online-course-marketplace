@@ -48,8 +48,8 @@ As a student, I want to see my cart total, so that I know how much I pay.
 As a student, I want to use a discount code, so that I pay less.
 
 **Acceptance criteria**
-- [ ] A valid code lowers the total by its rule.
-- [ ] An invalid code shows a message and the total does not change.
+- [x] A valid code lowers the total by its rule.
+- [x] An invalid code shows a message and the total does not change.
 
 ## US-08 Choose payment method
 As a student, I want to pay with Kaspi or with a bank card, so that I can use the method I have.

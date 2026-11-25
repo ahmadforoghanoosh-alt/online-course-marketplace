@@ -1,6 +1,9 @@
 package kz.kaznaru.capstone;
 
 import kz.kaznaru.capstone.domain.CourseRepository;
+import kz.kaznaru.capstone.domain.DiscountStrategy;
+import kz.kaznaru.capstone.domain.FixedAmountDiscount;
+import kz.kaznaru.capstone.domain.PercentDiscount;
 import kz.kaznaru.capstone.domain.Student;
 import kz.kaznaru.capstone.infra.CardPaymentProcessor;
 import kz.kaznaru.capstone.infra.ConsoleReceiptNotifier;
@@ -10,6 +13,7 @@ import kz.kaznaru.capstone.service.CartService;
 import kz.kaznaru.capstone.service.CatalogService;
 import kz.kaznaru.capstone.service.CertificateGenerator;
 import kz.kaznaru.capstone.service.CheckoutService;
+import kz.kaznaru.capstone.service.DiscountService;
 import kz.kaznaru.capstone.service.EnrollmentListener;
 import kz.kaznaru.capstone.service.HtmlCertificateGenerator;
 import kz.kaznaru.capstone.service.PaymentProcessor;
@@ -37,6 +41,11 @@ public final class App {
         checkout.subscribe(new EnrollmentListener());
         checkout.subscribe(new ConsoleReceiptNotifier(System.out));
 
+        Map<String, DiscountStrategy> codes = new LinkedHashMap<>();
+        codes.put("STUDENT10", new PercentDiscount(10));
+        codes.put("WELCOME2000", new FixedAmountDiscount(2000));
+        DiscountService discounts = new DiscountService(codes);
+
         List<PaymentProcessor> processors = List.of(new KaspiPaymentProcessor(), new CardPaymentProcessor());
 
         Map<String, CertificateGenerator> generators = new LinkedHashMap<>();
@@ -44,7 +53,7 @@ public final class App {
         generators.put("HTML", new HtmlCertificateGenerator());
 
         Student student = new Student("Student");
-        new ConsoleMenu(catalog, cartService, checkout, processors, generators,
+        new ConsoleMenu(catalog, cartService, checkout, discounts, processors, generators,
                 student, new Scanner(System.in), System.out).run();
     }
 }

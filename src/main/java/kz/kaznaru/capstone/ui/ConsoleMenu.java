@@ -2,6 +2,7 @@ package kz.kaznaru.capstone.ui;
 
 import kz.kaznaru.capstone.domain.Cart;
 import kz.kaznaru.capstone.domain.Course;
+import kz.kaznaru.capstone.domain.DiscountStrategy;
 import kz.kaznaru.capstone.domain.Order;
 import kz.kaznaru.capstone.domain.OrderStatus;
 import kz.kaznaru.capstone.domain.Student;
@@ -9,6 +10,7 @@ import kz.kaznaru.capstone.service.CartService;
 import kz.kaznaru.capstone.service.CatalogService;
 import kz.kaznaru.capstone.service.CertificateGenerator;
 import kz.kaznaru.capstone.service.CheckoutService;
+import kz.kaznaru.capstone.service.DiscountService;
 import kz.kaznaru.capstone.service.PaymentProcessor;
 import java.io.PrintStream;
 import java.time.LocalDate;
@@ -22,6 +24,7 @@ public class ConsoleMenu {
     private final CatalogService catalog;
     private final CartService cartService;
     private final CheckoutService checkout;
+    private final DiscountService discounts;
     private final List<PaymentProcessor> processors;
     private final Map<String, CertificateGenerator> generators;
     private final Student student;
@@ -30,11 +33,12 @@ public class ConsoleMenu {
     private final PrintStream out;
 
     public ConsoleMenu(CatalogService catalog, CartService cartService, CheckoutService checkout,
-                       List<PaymentProcessor> processors, Map<String, CertificateGenerator> generators,
+                       DiscountService discounts, List<PaymentProcessor> processors, Map<String, CertificateGenerator> generators,
                        Student student, Scanner in, PrintStream out) {
         this.catalog = catalog;
         this.cartService = cartService;
         this.checkout = checkout;
+        this.discounts = discounts;
         this.processors = processors;
         this.generators = generators;
         this.student = student;
@@ -63,7 +67,7 @@ public class ConsoleMenu {
         out.println("2. Show course details     6. Checkout");
         out.println("3. Add new course          7. My courses");
         out.println("4. Add course to cart      8. Complete a course and get certificate");
-        out.println("0. Exit");
+        out.println("9. Apply discount code     0. Exit");
         out.print("Choose: ");
     }
 
@@ -77,6 +81,7 @@ public class ConsoleMenu {
             case "6" -> doCheckout();
             case "7" -> showMyCourses();
             case "8" -> completeAndCertify();
+            case "9" -> applyDiscount();
             case "0" -> {
                 return false;
             }
@@ -129,7 +134,18 @@ public class ConsoleMenu {
         for (Course c : cart.getCourses()) {
             out.printf("  %s  %.2f KZT%n", c.title(), c.price());
         }
+        if (cart.hasDiscount()) {
+            out.printf("Subtotal: %.2f KZT%n", cart.subtotal());
+            out.println("Discount: " + cart.getDiscount().describe());
+        }
         out.printf("Cart total: %.2f KZT%n", cart.total());
+    }
+
+    private void applyDiscount() {
+        String code = readLine("Discount code: ");
+        DiscountStrategy discount = discounts.applyCode(cart, code);
+        out.println("Discount applied: " + discount.describe());
+        showCart();
     }
 
     private void doCheckout() {
