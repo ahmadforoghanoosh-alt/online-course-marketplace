@@ -10,6 +10,7 @@ import java.util.List;
 /**
  * Subject in the Observer pattern: after a paid order it tells every listener.
  * It does not know what the listeners do (US-08, US-09).
+ * Context in the Strategy pattern: the payment method is passed in as a PaymentStrategy.
  */
 public class CheckoutService {
     private final List<OrderListener> listeners = new ArrayList<>();
@@ -19,7 +20,7 @@ public class CheckoutService {
         listeners.add(listener);
     }
 
-    public Order checkout(Student student, Cart cart, PaymentProcessor processor) {
+    public Order checkout(Student student, Cart cart, PaymentStrategy payment) {
         if (cart.isEmpty()) {
             throw new IllegalStateException("Cart is empty");
         }
@@ -27,7 +28,7 @@ public class CheckoutService {
         nextOrderNumber++;
 
         // A free order (discount covers everything) needs no payment provider.
-        boolean paid = order.getTotal() == 0 || processor.pay(order);
+        boolean paid = order.getTotal() == 0 || payment.pay(order);
         if (paid) {
             order.markPaid();
             cart.clear();

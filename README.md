@@ -50,6 +50,7 @@ flowchart TB
     Discounts["DiscountService"]
     Checkout["CheckoutService<br/>Observer: subject"]
     Learning["LearningService<br/>Facade"]
+    PayStrat["PaymentStrategy<br/>Strategy"]
     Processor["PaymentProcessor<br/>Factory Method"]
     CertGen["CertificateGenerator<br/>Template Method"]
     Enroll["EnrollmentListener<br/>Observer"]
@@ -80,7 +81,8 @@ flowchart TB
   Catalog & CartSvc --> RepoPort
   Discounts --> Cart
   Cart --> Strategy
-  Checkout --> Processor
+  Checkout --> PayStrat
+  Processor -.implements.-> PayStrat
   Checkout --> Listener
   Checkout --> Order
   Learning --> CertGen
@@ -102,9 +104,10 @@ flowchart TB
 | Adapter | Structural | `KaspiAdapter`, `CardAdapter` → `PaymentGateway` | 2 |
 | Observer | Behavioral | `CheckoutService` → `EnrollmentListener`, `ConsoleReceiptNotifier` | 3 |
 | Template Method | Behavioral | `CertificateGenerator` → `TextCertificateGenerator`, `HtmlCertificateGenerator` | 4 |
-| Strategy | Behavioral | `Cart` + `DiscountStrategy` → `PercentDiscount`, `FixedAmountDiscount` | 5 |
+| Strategy | Behavioral | `Cart` + `DiscountStrategy` → `PercentDiscount`, `FixedAmountDiscount`; `CheckoutService` + `PaymentStrategy` → Kaspi / card processors | 5 |
 | Repository | Architectural | `CourseRepository` → `InMemoryCourseRepository`, `SqliteCourseRepository` | 6 |
 | Facade | Structural | `LearningService` over `Student` and the certificate generators | 7 |
+| Strategy + Factory Method + Adapter | Combination | the chosen `PaymentStrategy` creates its gateway (`createGateway()`), which adapts the vendor SDK | 5 + 1 + 2 |
 | Command | Behavioral | `CartHistory` runs and undoes `AddToCartCommand`, `RemoveFromCartCommand`, `ApplyDiscountCommand` | 8 |
 
 ## Patterns used

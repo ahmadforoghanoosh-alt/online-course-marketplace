@@ -14,7 +14,7 @@ import kz.kaznaru.capstone.service.CatalogService;
 import kz.kaznaru.capstone.service.CheckoutService;
 import kz.kaznaru.capstone.service.DiscountService;
 import kz.kaznaru.capstone.service.LearningService;
-import kz.kaznaru.capstone.service.PaymentProcessor;
+import kz.kaznaru.capstone.service.PaymentStrategy;
 import kz.kaznaru.capstone.service.RemoveFromCartCommand;
 import java.io.PrintStream;
 import java.time.LocalDate;
@@ -29,7 +29,7 @@ public class ConsoleMenu {
     private final CartService cartService;
     private final CheckoutService checkout;
     private final DiscountService discounts;
-    private final List<PaymentProcessor> processors;
+    private final List<PaymentStrategy> payments;
     private final LearningService learning;
     private final Student student;
     private final Cart cart = new Cart();
@@ -38,13 +38,13 @@ public class ConsoleMenu {
     private final PrintStream out;
 
     public ConsoleMenu(CatalogService catalog, CartService cartService, CheckoutService checkout,
-                       DiscountService discounts, List<PaymentProcessor> processors, LearningService learning,
+                       DiscountService discounts, List<PaymentStrategy> payments, LearningService learning,
                        Student student, Scanner in, PrintStream out) {
         this.catalog = catalog;
         this.cartService = cartService;
         this.checkout = checkout;
         this.discounts = discounts;
-        this.processors = processors;
+        this.payments = payments;
         this.learning = learning;
         this.student = student;
         this.in = in;
@@ -168,14 +168,14 @@ public class ConsoleMenu {
             return;
         }
         showCart();
-        for (int i = 0; i < processors.size(); i++) {
-            out.println((i + 1) + ". " + processors.get(i).name());
+        for (int i = 0; i < payments.size(); i++) {
+            out.println((i + 1) + ". " + payments.get(i).name());
         }
         int index = (int) readLong("Payment method: ") - 1;
-        if (index < 0 || index >= processors.size()) {
+        if (index < 0 || index >= payments.size()) {
             throw new IllegalArgumentException("Unknown payment method");
         }
-        Order order = checkout.checkout(student, cart, processors.get(index));
+        Order order = checkout.checkout(student, cart, payments.get(index));
         if (order.getStatus() == OrderStatus.PAID) {
             history.clear();
             out.println("Payment successful. You are enrolled!");
