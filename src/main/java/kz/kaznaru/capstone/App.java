@@ -18,7 +18,7 @@ import kz.kaznaru.capstone.service.DiscountService;
 import kz.kaznaru.capstone.service.EnrollmentListener;
 import kz.kaznaru.capstone.service.HtmlCertificateGenerator;
 import kz.kaznaru.capstone.service.LearningService;
-import kz.kaznaru.capstone.service.PaymentProcessor;
+import kz.kaznaru.capstone.service.PaymentStrategy;
 import kz.kaznaru.capstone.service.TextCertificateGenerator;
 import kz.kaznaru.capstone.ui.ConsoleMenu;
 import java.util.LinkedHashMap;
@@ -50,7 +50,7 @@ public final class App {
         codes.put("WELCOME2000", new FixedAmountDiscount(2000));
         DiscountService discounts = new DiscountService(codes);
 
-        List<PaymentProcessor> processors = List.of(new KaspiPaymentProcessor(), new CardPaymentProcessor());
+        List<PaymentStrategy> payments = List.of(new KaspiPaymentProcessor(), new CardPaymentProcessor());
 
         Map<String, CertificateGenerator> generators = new LinkedHashMap<>();
         generators.put("Text", new TextCertificateGenerator());
@@ -58,7 +58,7 @@ public final class App {
         LearningService learning = new LearningService(generators);
 
         Student student = new Student("Student");
-        new ConsoleMenu(catalog, cartService, checkout, discounts, processors, learning,
+        new ConsoleMenu(catalog, cartService, checkout, discounts, payments, learning,
                 student, new Scanner(System.in), System.out).run();
     }
 
