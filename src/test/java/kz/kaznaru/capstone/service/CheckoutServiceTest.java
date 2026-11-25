@@ -122,4 +122,26 @@ class CheckoutServiceTest {
         assertEquals(0, order.getTotal());
         assertEquals(OrderStatus.PAID, order.getStatus());
     }
+
+    @Test
+    void chainStopsTheOrderBeforePayment() {
+        Student ali = new Student("Ali");
+        ali.enroll(java);                       // already bought
+        CheckoutCheck checks = new CartNotEmptyCheck();
+        checks.setNext(new NotAlreadyBoughtCheck());
+        CheckoutService checkout = new CheckoutService(7, checks);
+        FakeListener listener = new FakeListener();
+        checkout.subscribe(listener);
+        Cart cart = new Cart();
+        cart.add(java);
+
+        IllegalStateException e = assertThrows(IllegalStateException.class,
+                () -> checkout.checkout(ali, cart, processorThatReturns(true)));
+
+        assertEquals("You already have \"Java\" in My courses", e.getMessage());
+        assertTrue(listener.received.isEmpty());          // nobody was told about a paid order
+        assertFalse(cart.isEmpty());                      // the cart is kept
+        Order next = checkout.checkout(new Student("Bob"), cart, processorThatReturns(true));
+        assertEquals("ORD-7", next.getId());              // the stopped order did not use a number
+    }
 }
