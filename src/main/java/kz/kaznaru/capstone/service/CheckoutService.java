@@ -14,7 +14,16 @@ import java.util.List;
  */
 public class CheckoutService {
     private final List<OrderListener> listeners = new ArrayList<>();
-    private int nextOrderNumber = 1;
+    private int nextOrderNumber;
+
+    public CheckoutService() {
+        this(1);
+    }
+
+    /** @param firstOrderNumber number of the next order, so ORD-numbers do not repeat after a restart */
+    public CheckoutService(int firstOrderNumber) {
+        this.nextOrderNumber = firstOrderNumber;
+    }
 
     public void subscribe(OrderListener listener) {
         listeners.add(listener);

@@ -10,6 +10,8 @@ import java.util.NoSuchElementException;
 import kz.kaznaru.capstone.domain.Cart;
 import kz.kaznaru.capstone.domain.Course;
 import kz.kaznaru.capstone.domain.Order;
+import kz.kaznaru.capstone.domain.OrderLine;
+import kz.kaznaru.capstone.domain.PaidOrder;
 import kz.kaznaru.capstone.domain.Student;
 import kz.kaznaru.capstone.service.AddToCartCommand;
 import kz.kaznaru.capstone.service.ApplyDiscountCommand;
@@ -20,6 +22,7 @@ import kz.kaznaru.capstone.service.CatalogService;
 import kz.kaznaru.capstone.service.CheckoutService;
 import kz.kaznaru.capstone.service.DiscountService;
 import kz.kaznaru.capstone.service.LearningService;
+import kz.kaznaru.capstone.service.OrderHistoryService;
 import kz.kaznaru.capstone.service.PaymentStrategy;
 import kz.kaznaru.capstone.service.RemoveFromCartCommand;
 
@@ -36,12 +39,13 @@ public class ApiController {
     private final List<PaymentStrategy> payments;
     private final LearningService learning;
     private final Student student;
+    private final OrderHistoryService orderHistory;
     private final Cart cart = new Cart();
     private final CartHistory history = new CartHistory();
 
     public ApiController(CatalogService catalog, CartService cartService, CheckoutService checkout,
                          DiscountService discounts, List<PaymentStrategy> payments, LearningService learning,
-                         Student student) {
+                         Student student, OrderHistoryService orderHistory) {
         this.catalog = catalog;
         this.cartService = cartService;
         this.checkout = checkout;
@@ -49,6 +53,7 @@ public class ApiController {
         this.payments = payments;
         this.learning = learning;
         this.student = student;
+        this.orderHistory = orderHistory;
     }
 
     /** Handles one request. Errors from the services become 400 (bad input), 404 (not found) or 409 (not allowed now). */
@@ -109,6 +114,8 @@ public class ApiController {
                 return ok(payments.stream().map(PaymentStrategy::name).toList());
             case "POST checkout/1":
                 return checkout(q.get("method"));
+            case "GET orders/1":
+                return ok(orderHistory.history().stream().map(ApiController::order).toList());
             case "GET my-courses/1":
                 return ok(learning.myCourses(student).stream().map(ApiController::course).toList());
             case "POST my-courses/3":
@@ -158,6 +165,24 @@ public class ApiController {
         m.put("instructor", c.instructor());
         m.put("description", c.description());
         m.put("price", c.price());
+        return m;
+    }
+
+    private static Map<String, Object> order(PaidOrder o) {
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("reference", o.reference());
+        m.put("student", o.student());
+        m.put("total", o.total());
+        List<Map<String, Object>> items = o.lines().stream().map(ApiController::line).toList();
+        m.put("courses", items);
+        return m;
+    }
+
+    private static Map<String, Object> line(OrderLine l) {
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("id", l.courseId());
+        m.put("title", l.title());
+        m.put("price", l.price());
         return m;
     }
 

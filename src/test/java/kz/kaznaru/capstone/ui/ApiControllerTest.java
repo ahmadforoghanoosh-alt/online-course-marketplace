@@ -7,6 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import kz.kaznaru.capstone.domain.FakeCourseRepository;
+import kz.kaznaru.capstone.domain.FakeOrderRepository;
 import kz.kaznaru.capstone.domain.PaymentGateway;
 import kz.kaznaru.capstone.domain.PercentDiscount;
 import kz.kaznaru.capstone.domain.Student;
@@ -17,6 +18,7 @@ import kz.kaznaru.capstone.service.CheckoutService;
 import kz.kaznaru.capstone.service.DiscountService;
 import kz.kaznaru.capstone.service.EnrollmentListener;
 import kz.kaznaru.capstone.service.LearningService;
+import kz.kaznaru.capstone.service.OrderHistoryService;
 import kz.kaznaru.capstone.service.PaymentProcessor;
 import kz.kaznaru.capstone.service.TextCertificateGenerator;
 import org.junit.jupiter.api.BeforeEach;
@@ -46,13 +48,15 @@ class ApiControllerTest {
         repo.add("Java", "Teacher", "Basics", 15000);
         repo.add("SQL", "Teacher", "Tables", 12000);
         CheckoutService checkout = new CheckoutService();
+        OrderHistoryService history = new OrderHistoryService(new FakeOrderRepository());
         checkout.subscribe(new EnrollmentListener());
+        checkout.subscribe(history);
         Map<String, CertificateGenerator> generators = new LinkedHashMap<>();
         generators.put("Text", new TextCertificateGenerator());
         api = new ApiController(new CatalogService(repo), new CartService(repo), checkout,
                 new DiscountService(Map.of("STUDENT10", new PercentDiscount(10))),
                 List.of(fake("Kaspi", true), fake("Card", false)), new LearningService(generators),
-                new Student("Ali"));
+                new Student("Ali"), history);
     }
 
     @Test
@@ -129,5 +133,18 @@ class ApiControllerTest {
         assertEquals(404, api.handle("PUT", "/courses/99", "title=X&instructor=B&description=d&price=100").status());
         assertEquals(404, api.handle("DELETE", "/courses/99", null).status());
         assertEquals(400, api.handle("PUT", "/courses/1", "title=&instructor=B&description=d&price=100").status());
+    }
+
+    @Test
+    void paidOrderAppearsInTheOrderHistory() {
+        assertEquals("[]", api.handle("GET", "/orders", null).body());
+        api.handle("POST", "/cart/1", null);
+        api.handle("POST", "/checkout", "method=Kaspi");
+
+        ApiResponse orders = api.handle("GET", "/orders", null);
+
+        assertEquals(200, orders.status());
+        assertTrue(orders.body().contains("\"reference\":\"ORD-1\""));
+        assertTrue(orders.body().contains("\"title\":\"Java\""));
     }
 }
