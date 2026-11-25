@@ -10,9 +10,14 @@ Delete the TODO rows as you replace them. `scripts/check-deliverables.sh` counts
 | 3 | Observer (Behavioral) | L5 | After payment, checkout had to call the receipt printer and the enrollment code directly, and grow with every new reaction | `OrderListener`, `CheckoutService` (subject), `EnrollmentListener`, `ConsoleReceiptNotifier` | `CheckoutServiceTest`, `ConsoleReceiptNotifierTest` | Direct calls inside `checkout()`: rejected, every new reaction edits `CheckoutService` |
 | 4 | Template Method (Behavioral) | L6 | Text and HTML certificates repeat the same steps (check completed, header, body, footer); only the format differs | `CertificateGenerator` (final `generate()`), `TextCertificateGenerator`, `HtmlCertificateGenerator` | `CertificateGeneratorTest` | Two separate classes with copy-pasted steps: a fix must be made twice |
 
+## Audit log
+| Date | What we checked | Result | ADR |
+|------|-----------------|--------|-----|
+| 2026-11-25 (week 7) | All 4 patterns and the services after v0.2 | All 4 patterns kept. Removed the pass-through methods `removeFromCart()` and `total()` from `CartService` (middle man smell). Singleton rejected | [ADR-0002](adr/0002-pattern-audit-week-7.md) |
+
 ## Rejected patterns
 At least two patterns you considered and decided NOT to use, with the reason (YAGNI). Link the ADR.
 
 | Pattern | Why rejected | ADR |
 |---------|--------------|-----|
-| TODO | TODO | TODO |
+| Singleton (Creational) | `App` already creates one object of each service and passes it in. A Singleton is a global variable: it hides the dependency and tests would share state | [ADR-0002](adr/0002-pattern-audit-week-7.md) |

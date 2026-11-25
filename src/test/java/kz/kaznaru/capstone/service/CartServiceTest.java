@@ -14,17 +14,15 @@ class CartServiceTest {
     private final CartService service = new CartService(repo);
 
     @Test
-    void addAndRemoveChangeTotal() {
+    void addFindsCourseInRepository() {
         repo.add("Java", "A", "d", 15000);
         repo.add("SQL", "B", "d", 12000);
         Cart cart = new Cart();
 
         service.addToCart(cart, 1);
         service.addToCart(cart, 2);
-        assertEquals(27000, service.total(cart));
-
-        service.removeFromCart(cart, 1);
-        assertEquals(12000, service.total(cart));
+        assertEquals(2, cart.getCourses().size());
+        assertEquals(27000, cart.total());
     }
 
     @Test

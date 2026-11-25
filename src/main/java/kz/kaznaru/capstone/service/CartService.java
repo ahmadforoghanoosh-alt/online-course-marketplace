@@ -4,7 +4,7 @@ import kz.kaznaru.capstone.domain.Cart;
 import kz.kaznaru.capstone.domain.Course;
 import kz.kaznaru.capstone.domain.CourseRepository;
 
-/** Use cases for the cart (US-04, US-05 remove, US-06). */
+/** Use case for the cart that needs the catalogue: add a course by id (US-04). */
 public class CartService {
     private final CourseRepository repository;
 
@@ -17,13 +17,5 @@ public class CartService {
                 .orElseThrow(() -> new IllegalArgumentException("Course not found"));
         cart.add(course);
         return course;
-    }
-
-    public void removeFromCart(Cart cart, long courseId) {
-        cart.remove(courseId);
-    }
-
-    public double total(Cart cart) {
-        return cart.total();
     }
 }
