@@ -143,6 +143,8 @@ button.danger.sure { background: var(--danger); color: #fff; border-color: var(-
 dialog h2 { margin-top: 0; }
 dialog { border: 0; border-radius: var(--radius); padding: 1.5rem; width: min(560px, 92vw); box-shadow: 0 20px 60px #0003; }
 dialog pre { background: var(--bg); padding: 1rem; border-radius: 8px; white-space: pre-wrap; }
+dialog.wide { width: min(1000px, 95vw); }
+dialog.wide iframe { height: auto; aspect-ratio: 297 / 210; }
 dialog iframe { width: 100%; height: 260px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
 #toast {
   position: fixed; left: 50%; bottom: 1.5rem; transform: translateX(-50%) translateY(150%);

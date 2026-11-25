@@ -27,7 +27,7 @@ always behave the same.
 |---|---|---|
 | Catalogue | search courses, add to cart | `GET /courses`, `POST /cart/{id}` |
 | Cart | remove, discount code, undo, pay with Kaspi or bank card | `DELETE /cart/{id}`, `POST /cart/discount`, `POST /cart/undo`, `POST /checkout` |
-| My learning | my courses, certificate (Text or HTML), order history | `GET /my-courses`, `POST /my-courses/{id}/certificate`, `GET /orders` |
+| My learning | my courses, certificate (Classic printable design, Text or HTML), order history | `GET /my-courses`, `POST /my-courses/{id}/certificate`, `GET /orders` |
 | Admin | add, edit and delete courses (CRUD) | `POST`, `GET`, `PUT`, `DELETE /courses` |
 
 Tick **Show patterns** in the top right corner to see which design pattern works behind each part of the page.
@@ -51,7 +51,7 @@ In VS Code: open Run and Debug, choose **Run API (port 8080)** and press F5.
 | DELETE | `/cart/{id}` | remove a course from the cart |
 | POST | `/cart/discount?code=STUDENT10` | apply a discount code |
 | POST | `/cart/undo` | undo the last cart change (Command) |
-| GET | `/certificate-formats` | Text, HTML |
+| GET | `/certificate-formats` | Classic, Text, HTML |
 | GET | `/payment-methods` | Kaspi, Bank card (Strategy) |
 | POST | `/checkout?method=Kaspi` | pay; the receipt is printed in the server console (Observer) |
 | GET | `/orders` | order history from the database (reference, total, courses) |

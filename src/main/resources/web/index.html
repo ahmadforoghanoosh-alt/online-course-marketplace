@@ -114,7 +114,10 @@
   <dialog id="certificate">
     <h2>Your certificate</h2>
     <div id="certificate-body"></div>
-    <form method="dialog"><button class="primary">Close</button></form>
+    <form method="dialog" class="row end">
+      <button type="button" id="print-certificate">Open to print / save as PDF</button>
+      <button class="primary">Close</button>
+    </form>
   </dialog>
 
   <div id="toast" role="status" aria-live="polite"></div>
